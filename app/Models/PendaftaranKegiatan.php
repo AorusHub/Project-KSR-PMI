@@ -1,30 +1,29 @@
 <?php
-// filepath: c:\xampp\htdocs\ksr-pmi\Project-KSR-PMI\app\Models\DonasiDarah.php
+// filepath: c:\xampp\htdocs\ksr-pmi\Project-KSR-PMI\app\Models\PendaftaranKegiatan.php
 
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class DonasiDarah extends Model
+class PendaftaranKegiatan extends Model
 {
     use HasFactory;
 
-    protected $table = 'donasi_darah';
-    protected $primaryKey = 'id_donasi';
+    protected $table = 'pendaftaran_kegiatan';
+    protected $primaryKey = 'id_pendaftaran';
 
     protected $fillable = [
         'id_pendonor',
-        'tgl_donasi',
-        'jenis_donor',
         'id_kegiatan',
-        'id_permintaan',
-        'lokasi_donor',
-        'status_donasi',
+        'tgl_daftar',
+        'status_pendaftaran',
+        'tgl_acc',
     ];
 
     protected $casts = [
-        'tgl_donasi' => 'date',
+        'tgl_daftar' => 'date',
+        'tgl_acc' => 'date',
     ];
 
     // Relationships
@@ -36,10 +35,5 @@ class DonasiDarah extends Model
     public function kegiatan()
     {
         return $this->belongsTo(KegiatanDonor::class, 'id_kegiatan', 'id_kegiatan');
-    }
-
-    public function permintaan()
-    {
-        return $this->belongsTo(PermintaanDonor::class, 'id_permintaan', 'id_permintaan');
     }
 }
