@@ -1,45 +1,62 @@
 <?php
-// filepath: c:\xampp\htdocs\ksr-pmi\Project-KSR-PMI\app\Models\DonasiDarah.php
 
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
-class DonasiDarah extends Model
+class User extends Authenticatable
 {
-    use HasFactory;
+    use HasFactory, Notifiable;
 
-    protected $table = 'donasi_darah';
-    protected $primaryKey = 'id_donasi';
+    protected $table = 'users';
+    protected $primaryKey = 'id_user'; // Fix: use correct primary key
 
     protected $fillable = [
-        'id_pendonor',
-        'tgl_donasi',
-        'jenis_donor',
-        'id_kegiatan',
-        'id_permintaan',
-        'lokasi_donor',
-        'status_donasi',
+        'nama',
+        'email',
+        'password',
+        'role',
     ];
 
-    protected $casts = [
-        'tgl_donasi' => 'date',
+    protected $hidden = [
+        'password',
+        'remember_token',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+        ];
+    }
 
     // Relationships
     public function pendonor()
     {
-        return $this->belongsTo(Pendonor::class, 'id_pendonor', 'id_pendonor');
+        return $this->hasOne(Pendonor::class, 'id_user', 'id_user'); // Fix: use correct keys
     }
 
-    public function kegiatan()
+    public function anggota()
     {
-        return $this->belongsTo(KegiatanDonor::class, 'id_kegiatan', 'id_kegiatan');
+        return $this->hasOne(Anggota::class, 'id_user', 'id_user'); // Fix: use correct keys
     }
 
-    public function permintaan()
+    // Helper methods for role checking
+    public function isAdmin()
     {
-        return $this->belongsTo(PermintaanDonor::class, 'id_permintaan', 'id_permintaan');
+        return $this->role === 'Admin';
+    }
+
+    public function isStaf()
+    {
+        return $this->role === 'Staf';
+    }
+
+    public function isPendonor()
+    {
+        return $this->role === 'Pendonor';
     }
 }

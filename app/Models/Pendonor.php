@@ -1,5 +1,4 @@
 <?php
-// filepath: c:\xampp\htdocs\ksr-pmi\Project-KSR-PMI\app\Models\Pendonor.php
 
 namespace App\Models;
 
@@ -16,9 +15,13 @@ class Pendonor extends Model
     protected $fillable = [
         'id_user',
         'NIK',
-        'alamat',
+        'nama_lengkap',
+        'tempat_lahir',
         'tgl_lahir',
+        'jenis_kelamin',
+        'alamat',
         'golongan_darah',
+        'no_hp',
     ];
 
     protected $casts = [
