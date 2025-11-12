@@ -70,7 +70,7 @@ Route::middleware(['auth', 'role:pendonor'])->prefix('pendonor')->name('pendonor
     Route::get('/riwayat-donor', [DashboardController::class, 'riwayatDonor'])->name('riwayat-donor');
     Route::get('/riwayat-donor/export-pdf', [DashboardController::class, 'exportPDF'])->name('riwayat-donor.export-pdf');
     
-    // Tambahkan route pendonor lainnya di sini
+    // Tambahkan route pendonor lainnya di sini //
     // Route::get('/kegiatan', [PendonorController::class, 'kegiatan'])->name('kegiatan');
 });
 
