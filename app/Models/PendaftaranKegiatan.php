@@ -11,11 +11,11 @@ class PendaftaranKegiatan extends Model
     use HasFactory;
 
     protected $table = 'pendaftaran_kegiatan';
-    protected $primaryKey = 'id_pendaftaran';
+    protected $primaryKey = 'pendaftaran_id';
 
     protected $fillable = [
-        'id_pendonor',
-        'id_kegiatan',
+        'pendonor_id',
+        'kegiatan_id',
         'tgl_daftar',
         'status_pendaftaran',
         'tgl_acc',
@@ -29,11 +29,11 @@ class PendaftaranKegiatan extends Model
     // Relationships
     public function pendonor()
     {
-        return $this->belongsTo(Pendonor::class, 'id_pendonor', 'id_pendonor');
+        return $this->belongsTo(Pendonor::class, 'pendonor_id', 'pendonor_id');
     }
 
     public function kegiatan()
     {
-        return $this->belongsTo(KegiatanDonor::class, 'id_kegiatan', 'id_kegiatan');
+        return $this->belongsTo(KegiatanDonor::class, 'kegiatan_id', 'kegiatan_id');
     }
 }

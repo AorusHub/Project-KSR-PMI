@@ -12,7 +12,7 @@ class AnggotaSeeder extends Seeder
     {
         DB::table('anggota')->insert([
             [
-                'id_user' => 2, // Staf KSR PMI
+                'user_id' => 2, // Staf KSR PMI
                 'nama_staf' => 'Staf KSR PMI UNHAS',
                 'created_at' => now(),
                 'updated_at' => now(),

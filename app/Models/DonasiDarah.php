@@ -3,43 +3,45 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class DonasiDarah extends Model
 {
-    use HasFactory;
-
     protected $table = 'donasi_darah';
-    protected $primaryKey = 'id_donasi';
+    protected $primaryKey = 'donasi_id';
 
     protected $fillable = [
-        'id_pendonor',
-        'tgl_donasi',
-        'jenis_donor',
-        'id_kegiatan',
-        'id_permintaan',
-        'lokasi_donor',
+        'pendonor_id',
+        'kegiatan_id',
+        'tanggal_donasi',
+        'lokasi_donasi',
+        'volume_darah',
         'status_donasi',
+        'catatan',
+        'verified_by',
+        'verified_at',
     ];
 
     protected $casts = [
-        'tgl_donasi' => 'date',
+        'tanggal_donasi' => 'date',
+        'verified_at' => 'datetime',
     ];
 
-    // Relationships
+    // Relasi ke Pendonor
     public function pendonor()
     {
-        return $this->belongsTo(Pendonor::class, 'id_pendonor', 'id_pendonor');
+        return $this->belongsTo(Pendonor::class, 'pendonor_id', 'pendonor_id');
     }
 
+    // Relasi ke Kegiatan Donor
     public function kegiatan()
     {
-        return $this->belongsTo(KegiatanDonor::class, 'id_kegiatan', 'id_kegiatan');
+        return $this->belongsTo(KegiatanDonor::class, 'kegiatan_id', 'kegiatan_id');
     }
 
-    public function permintaan()
+    // Relasi ke User yang verifikasi
+    public function verifier()
     {
-        return $this->belongsTo(PermintaanDonor::class, 'id_permintaan', 'id_permintaan');
+        return $this->belongsTo(User::class, 'verified_by', 'user_id');
     }
 }

@@ -11,7 +11,7 @@ class InfoUtd extends Model
     use HasFactory;
 
     protected $table = 'info_utd';
-    protected $primaryKey = 'id_utd';
+    protected $primaryKey = 'utd_id';
 
     protected $fillable = [
         'nama_utd',

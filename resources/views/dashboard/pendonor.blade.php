@@ -1,260 +1,244 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+{{-- filepath: c:\xampp\htdocs\ksr-pmi\Project-KSR-PMI\resources\views\dashboard\pendonor.blade.php --}}
+@extends('layouts.app')
 
-    <title>Dashboard Pendonor - KSR PMI UNHAS</title>
+@section('title', 'Dashboard Pendonor - KSR PMI UNHAS')
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-
-    <!-- Scripts -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-<body class="font-sans antialiased bg-gray-50">
-    <div class="min-h-screen">
-        <!-- Navigation Header -->
-        <nav class="bg-white shadow-sm border-b">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between h-16">
-                    <!-- Logo and Brand -->
-                    <div class="flex items-center">
-                        <img src="{{ asset('images/logo-ksr-pmi.png') }}" alt="KSR PMI" class="h-8 w-auto mr-3">
-                        <span class="font-semibold text-xl text-gray-800">KSR PMI UNHAS</span>
-                    </div>
-
-                    <!-- User Menu -->
-                    <div class="flex items-center space-x-4">
-                        <span class="text-gray-700">Halo, {{ Auth::user()->nama }}!</span>
-                        <form method="POST" action="{{ route('logout') }}" class="inline">
-                            @csrf
-                            <button type="submit" class="text-red-600 hover:text-red-800 font-medium">
-                                Logout
-                            </button>
-                        </form>
-                    </div>
+@section('content')
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {{-- Welcome Section --}}
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900 mb-1">
+                        Selamat Datang, {{ $pendonor->nama ?? Auth::user()->nama }}!
+                    </h1>
+                    <p class="text-gray-600 text-sm">
+                        Terima kasih atas dedikasi Anda sebagai pendonor darah
+                    </p>
                 </div>
-            </div>
-        </nav>
-
-        <!-- Main Content -->
-        <div class="py-8">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <!-- Welcome Section -->
-                <div class="bg-gradient-to-r from-red-500 to-red-600 rounded-lg p-6 mb-8 text-white">
-                    <div class="flex items-center">
-                        <div class="flex-1">
-                            <h1 class="text-2xl font-bold mb-2">
-                                Selamat Datang, {{ $pendonor->nama_lengkap ?? Auth::user()->nama }}! 
-                            </h1>
-                            <p class="text-red-100">
-                                Terima kasih atas dedikasi Anda dalam mendonorkan darah untuk kemanusiaan.
-                            </p>
-                        </div>
-                        <div class="ml-6">
-                            <div class="bg-white bg-opacity-20 rounded-full p-4">
-                                <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"></path>
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Stats Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <!-- Golongan Darah -->
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <div class="flex items-center">
-                            <div class="p-3 rounded-full bg-red-100">
-                                <svg class="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                                </svg>
-                            </div>
-                            <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-600">Golongan Darah</p>
-                                <p class="text-2xl font-bold text-gray-900">
-                                    {{ $pendonor->golongan_darah ?? 'Belum diisi' }}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Kegiatan Tersedia -->
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <div class="flex items-center">
-                            <div class="p-3 rounded-full bg-blue-100">
-                                <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                            </div>
-                            <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-600">Kegiatan Tersedia</p>
-                                <p class="text-2xl font-bold text-gray-900">
-                                    {{ $kegiatanTersedia->count() }}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Total Donasi -->
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <div class="flex items-center">
-                            <div class="p-3 rounded-full bg-green-100">
-                                <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"></path>
-                                </svg>
-                            </div>
-                            <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-600">Total Donasi</p>
-                                <p class="text-2xl font-bold text-gray-900">
-                                    {{ $riwayatDonasi->count() }}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Main Content Grid -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <!-- Kegiatan Donor Tersedia -->
-                    <div class="bg-white rounded-lg shadow">
-                        <div class="px-6 py-4 border-b border-gray-200">
-                            <h3 class="text-lg font-semibold text-gray-900">Kegiatan Donor Terbaru</h3>
-                        </div>
-                        <div class="p-6">
-                            @forelse($kegiatanTersedia as $kegiatan)
-                                <div class="mb-4 last:mb-0 p-4 border border-gray-200 rounded-lg">
-                                    <div class="flex justify-between items-start">
-                                        <div class="flex-1">
-                                            <h4 class="font-semibold text-gray-900 mb-2">
-                                                {{ $kegiatan->nama_kegiatan }}
-                                            </h4>
-                                            <div class="space-y-1 text-sm text-gray-600">
-                                                <p>📅 {{ $kegiatan->tanggal->format('d M Y, H:i') }}</p>
-                                                <p>📍 {{ $kegiatan->lokasi }}</p>
-                                                <p>🎯 Target: {{ $kegiatan->target_donor }} pendonor</p>
-                                            </div>
-                                        </div>
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                            {{ $kegiatan->status }}
-                                        </span>
-                                    </div>
-                                    <div class="mt-3">
-                                        <button class="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition-colors text-sm font-medium">
-                                            Daftar Kegiatan
-                                        </button>
-                                    </div>
-                                </div>
-                            @empty
-                                <div class="text-center py-8">
-                                    <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                    <p class="text-gray-500">Tidak ada kegiatan tersedia saat ini</p>
-                                </div>
-                            @endforelse
-                        </div>
-                    </div>
-
-                    <!-- Riwayat Donasi -->
-                    <div class="bg-white rounded-lg shadow">
-                        <div class="px-6 py-4 border-b border-gray-200">
-                            <h3 class="text-lg font-semibold text-gray-900">Riwayat Donasi Saya</h3>
-                        </div>
-                        <div class="p-6">
-                            @forelse($riwayatDonasi as $donasi)
-                                <div class="mb-4 last:mb-0 p-4 border border-gray-200 rounded-lg">
-                                    <div class="flex justify-between items-start">
-                                        <div class="flex-1">
-                                            <h4 class="font-semibold text-gray-900 mb-2">
-                                                {{ $donasi->jenis_donor }}
-                                            </h4>
-                                            <div class="space-y-1 text-sm text-gray-600">
-                                                <p>📅 {{ $donasi->tgl_donasi->format('d M Y') }}</p>
-                                                <p>📍 {{ $donasi->lokasi_donor }}</p>
-                                            </div>
-                                        </div>
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
-                                            {{ $donasi->status_donasi == 'Selesai' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
-                                            {{ $donasi->status_donasi }}
-                                        </span>
-                                    </div>
-                                </div>
-                            @empty
-                                <div class="text-center py-8">
-                                    <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"></path>
-                                    </svg>
-                                    <p class="text-gray-500">Belum ada riwayat donasi</p>
-                                    <p class="text-sm text-gray-400 mt-1">Ayo mulai berdonor untuk membantu sesama!</p>
-                                </div>
-                            @endforelse
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Pendaftaran Saya -->
-                @if($pendaftaranSaya->count() > 0)
-                <div class="mt-8">
-                    <div class="bg-white rounded-lg shadow">
-                        <div class="px-6 py-4 border-b border-gray-200">
-                            <h3 class="text-lg font-semibold text-gray-900">Pendaftaran Kegiatan Saya</h3>
-                        </div>
-                        <div class="p-6">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                @foreach($pendaftaranSaya as $pendaftaran)
-                                    <div class="p-4 border border-gray-200 rounded-lg">
-                                        <div class="flex justify-between items-start mb-2">
-                                            <h4 class="font-semibold text-gray-900">
-                                                {{ $pendaftaran->kegiatan->nama_kegiatan }}
-                                            </h4>
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
-                                                {{ $pendaftaran->status_pendaftaran == 'Diterima' ? 'bg-green-100 text-green-800' : 
-                                                   ($pendaftaran->status_pendaftaran == 'Pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
-                                                {{ $pendaftaran->status_pendaftaran }}
-                                            </span>
-                                        </div>
-                                        <div class="text-sm text-gray-600">
-                                            <p>📅 {{ $pendaftaran->kegiatan->tanggal->format('d M Y') }}</p>
-                                            <p>📍 {{ $pendaftaran->kegiatan->lokasi }}</p>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                @endif
-
-                <!-- Info Kesehatan -->
-                <div class="mt-8">
-                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
-                        <div class="flex items-start">
-                            <div class="flex-shrink-0">
-                                <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
-                                </svg>
-                            </div>
-                            <div class="ml-3">
-                                <h3 class="text-sm font-medium text-blue-800">Info Kesehatan Donor</h3>
-                                <div class="mt-2 text-sm text-blue-700">
-                                    <ul class="list-disc list-inside space-y-1">
-                                        <li>Pastikan kondisi tubuh sehat sebelum donor</li>
-                                        <li>Jarak minimal antar donor darah adalah 12 minggu (3 bulan)</li>
-                                        <li>Makan dan minum yang cukup sebelum donor</li>
-                                        <li>Istirahat yang cukup setelah donor darah</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="hidden md:block">
+                    <img src="{{ asset('images/donor-illustration.png') }}" alt="Donor" class="h-16" onerror="this.style.display='none'">
                 </div>
             </div>
         </div>
+
+        {{-- Stats Cards --}}
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            {{-- Total Donasi --}}
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium text-gray-600">Total Donasi</span>
+                    <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                        <svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                </div>
+                <p class="text-3xl font-bold text-gray-900">{{ $totalDonasi ?? 5 }}</p>
+                <p class="text-xs text-gray-500 mt-1">Kantong darah didonasikan</p>
+            </div>
+
+            {{-- Donasi Terakhir --}}
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium text-gray-600">Donasi Terakhir</span>
+                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                </div>
+                <p class="text-3xl font-bold text-gray-900">
+                    {{ $donasiTerakhir ? $donasiTerakhir->tgl_donasi->format('d/m/Y') : '17/9/2025' }}
+                </p>
+                <p class="text-xs text-gray-500 mt-1">
+                    {{ $donasiTerakhir ? $donasiTerakhir->lokasi_donor : 'PMI Kota Makassar' }}
+                </p>
+            </div>
+
+            {{-- Donor Berikutnya --}}
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium text-gray-600">Donor Berikutnya</span>
+                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                        <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                </div>
+                <p class="text-3xl font-bold text-gray-900">
+                    {{ $donorBerikutnya ? $donorBerikutnya->format('d/m/Y') : '16/12/2025' }}
+                </p>
+                <p class="text-xs text-gray-500 mt-1">Anda sudah dapat kembali</p>
+            </div>
+        </div>
+
+        {{-- Main Content Grid --}}
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            {{-- Left Column: Riwayat Donor --}}
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-lg shadow-sm">
+                    <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                        <h2 class="text-lg font-bold text-gray-900">Riwayat Donor</h2>
+                        <a href="{{ route('pendonor.riwayat-donor') }}" class="text-sm text-red-600 hover:text-red-700 font-medium">
+                            Lihat Detail
+                        </a>
+                    </div>
+                    <div class="p-6">
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead>
+                                    <tr class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th class="pb-3">Tanggal</th>
+                                        <th class="pb-3">Kegiatan</th>
+                                        <th class="pb-3">Lokasi</th>
+                                        <th class="pb-3">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    @forelse($riwayatDonasi ?? [] as $donasi)
+                                    <tr class="text-sm">
+                                        <td class="py-3 text-gray-900">{{ $donasi->tgl_donasi->format('d/m/Y') }}</td>
+                                        <td class="py-3 text-gray-700">{{ $donasi->jenis_donor ?? 'Donor Darah Sukarela' }}</td>
+                                        <td class="py-3 text-gray-700">{{ $donasi->lokasi_donor }}</td>
+                                        <td class="py-3">
+                                            <span class="px-2 py-1 text-xs font-medium rounded-full 
+                                                {{ $donasi->status_donasi == 'Selesai' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                                {{ $donasi->status_donasi }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    @empty
+                                    <tr>
+                                        <td class="py-3 text-gray-900">17/9/2025</td>
+                                        <td class="py-3 text-gray-700">Donor Darah Sukarela</td>
+                                        <td class="py-3 text-gray-700">PMI Kota Makassar</td>
+                                        <td class="py-3">
+                                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">Selesai</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-3 text-gray-900">15/6/2025</td>
+                                        <td class="py-3 text-gray-700">Donor Darah Kampus UNHAS</td>
+                                        <td class="py-3 text-gray-700">Gedung Andi Pangerang UNHAS</td>
+                                        <td class="py-3">
+                                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">Selesai</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-3 text-gray-900">9/3/2025</td>
+                                        <td class="py-3 text-gray-700">Donor Darah Masjid Raya</td>
+                                        <td class="py-3 text-gray-700">Masjid Raya Makassar</td>
+                                        <td class="py-3">
+                                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">Selesai</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-3 text-gray-900">20/12/2024</td>
+                                        <td class="py-3 text-gray-700">Donor Darah HUT Kemerdekaan</td>
+                                        <td class="py-3 text-gray-700">Mall Panakkukang</td>
+                                        <td class="py-3">
+                                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-700">Gagal</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-3 text-gray-900">15/9/2024</td>
+                                        <td class="py-3 text-gray-700">Donor Darah Fakultas Kedokteran</td>
+                                        <td class="py-3 text-gray-700">FK UNHAS</td>
+                                        <td class="py-3">
+                                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">Selesai</span>
+                                        </td>
+                                    </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Right Column: Profile & Actions --}}
+            <div class="space-y-6">
+                
+                {{-- Profile Card --}}
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <div class="text-center mb-6">
+                        <div class="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center text-white text-3xl font-bold mx-auto mb-3">
+                            {{ strtoupper(substr($pendonor->nama ?? Auth::user()->nama, 0, 1)) }}
+                        </div>
+                        <h3 class="font-bold text-gray-900 text-lg">
+                            {{ $pendonor->nama ?? 'Nama Pendonor' }}
+                        </h3>
+                        <p class="text-sm text-gray-600">
+                            {{ $pendonor->golongan_darah ?? 'Golongan Darah' }} • Pendonor
+                        </p>
+                    </div>
+
+                    <div class="space-y-3 text-sm">
+                        <div class="flex items-center text-gray-700">
+                            <svg class="w-5 h-5 mr-2 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
+                                <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
+                            </svg>
+                            <span>Email:</span>
+                            <span class="ml-auto font-medium">{{ $pendonor->email ?? 'donor@demo.com' }}</span>
+                        </div>
+                        <div class="flex items-center text-gray-700">
+                            <svg class="w-5 h-5 mr-2 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
+                            </svg>
+                            <span>No. HP:</span>
+                            <span class="ml-auto font-medium">{{ $pendonor->no_telepon ?? '08123456789' }}</span>
+                        </div>
+                        <div class="flex items-center text-gray-700">
+                            <svg class="w-5 h-5 mr-2 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+                            </svg>
+                            <span>Member sejak:</span>
+                            <span class="ml-auto font-medium">{{ $pendonor->created_at ? $pendonor->created_at->format('Y') : '2024' }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Pendonor Aktif Badge --}}
+                <div class="bg-gradient-to-r from-red-600 to-red-700 rounded-lg shadow-sm p-6 text-white text-center">
+                    <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">Pendonor Aktif</h3>
+                    <p class="text-sm text-red-100">
+                        Terima kasih telah menyumbangkan darah Anda. 
+                        <br>5 nyawa berhasil diselamatkan!
+                    </p>
+                </div>
+
+                {{-- Action Buttons --}}
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <h3 class="font-bold text-gray-900 mb-4">Aksi Cepat</h3>
+                    <div class="space-y-3">
+                        <button class="w-full flex items-center justify-center px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
+                            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+                            </svg>
+                            Cari Kegiatan Donor
+                        </button>
+                        <button class="w-full flex items-center justify-center px-4 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+                            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/>
+                            </svg>
+                            Cek Kelayakan Donor
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
     </div>
-</body>
-</html>
+</div>
+@endsection

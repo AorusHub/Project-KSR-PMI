@@ -79,7 +79,7 @@ class AuthController extends Controller
 
         // Buat data pendonor
         Pendonor::create([
-            'id_user' => $user->id_user,
+            'user_id' => $user->user_id,
             'NIK' => $request->NIK,
             'alamat' => $request->alamat,
             'tgl_lahir' => $request->tgl_lahir,

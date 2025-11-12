@@ -11,10 +11,10 @@ class RiwayatMedis extends Model
     use HasFactory;
 
     protected $table = 'riwayat_medis';
-    protected $primaryKey = 'id_riwayat_medis';
+    protected $primaryKey = 'riwayat_medis_id';
 
     protected $fillable = [
-        'id_pendonor',
+        'pendonor_id',
         'berat_badan',
         'tekanan_darah',
         'hb',
@@ -30,6 +30,6 @@ class RiwayatMedis extends Model
     // Relationships
     public function pendonor()
     {
-        return $this->belongsTo(Pendonor::class, 'id_pendonor', 'id_pendonor');
+        return $this->belongsTo(Pendonor::class, 'pendonor_id', 'pendonor_id');
     }
 }

@@ -11,16 +11,16 @@ class Anggota extends Model
     use HasFactory;
 
     protected $table = 'anggota';
-    protected $primaryKey = 'id_staf';
+    protected $primaryKey = 'staf_id';
 
     protected $fillable = [
-        'id_user',
+        'user_id',
         'nama_staf',
     ];
 
     // Relationships
     public function user()
     {
-        return $this->belongsTo(User::class, 'id_user', 'id_user');
+        return $this->belongsTo(User::class, 'user_id', 'user_id');
     }
 }

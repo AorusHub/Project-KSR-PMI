@@ -3,40 +3,40 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class KegiatanDonor extends Model
 {
-    use HasFactory;
-
     protected $table = 'kegiatan_donor';
-    protected $primaryKey = 'id_kegiatan';
+    protected $primaryKey = 'kegiatan_id';
 
     protected $fillable = [
         'nama_kegiatan',
         'tanggal',
+        'waktu_mulai',
+        'waktu_selesai',
         'lokasi',
+        'deskripsi',
+        'target_donor',
         'status',
+        'created_by',
     ];
 
     protected $casts = [
         'tanggal' => 'date',
+        'waktu_mulai' => 'datetime:H:i',
+        'waktu_selesai' => 'datetime:H:i',
     ];
 
-    // Relationships
-    public function pendaftaran()
+    // Relasi ke User (pembuat kegiatan)
+    public function creator()
     {
-        return $this->hasMany(PendaftaranKegiatan::class, 'id_kegiatan', 'id_kegiatan');
+        return $this->belongsTo(User::class, 'created_by', 'user_id');
     }
 
-    public function partisipan()
-    {
-        return $this->hasMany(PartisipanKegiatan::class, 'id_kegiatan', 'id_kegiatan');
-    }
-
+    // Relasi ke DonasiDarah
     public function donasiDarah()
     {
-        return $this->hasMany(DonasiDarah::class, 'id_kegiatan', 'id_kegiatan');
+        return $this->hasMany(DonasiDarah::class, 'kegiatan_id', 'kegiatan_id');
     }
 }

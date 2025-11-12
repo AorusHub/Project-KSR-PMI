@@ -1,51 +1,86 @@
 <?php
+// filepath: c:\xampp\htdocs\ksr-pmi\Project-KSR-PMI\routes\web.php
 
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\HomeController;
 
-// Redirect root URL to login
-Route::get('/', function () {
-    return redirect()->route('login');
+/*
+|--------------------------------------------------------------------------
+| PUBLIC ROUTES
+|--------------------------------------------------------------------------
+*/
+Route::get('/', [HomeController::class, 'index'])->name('home');
+
+/*
+|--------------------------------------------------------------------------
+| AUTHENTICATION ROUTES (Guest Only)
+|--------------------------------------------------------------------------
+*/
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [LoginController::class, 'login']);
+    Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
+    Route::post('/register', [RegisterController::class, 'register']);
 });
 
-// Dashboard route with role-based redirection
-Route::get('/dashboard', function () {
-    $user = auth()->user();
-    
-    if (!$user) {
-        return redirect('/login');
-    }
-    
-    // Redirect based on user role
-    switch ($user->role) {
-        case 'Admin':
-            return app(DashboardController::class)->adminDashboard();
-        case 'Staf':
-            return app(DashboardController::class)->stafDashboard();
-        case 'Pendonor':
-            return app(DashboardController::class)->pendonorDashboard();
-        default:
-            return view('dashboard'); // fallback to default dashboard
-    }
-})->middleware(['auth'])->name('dashboard');
+/*
+|--------------------------------------------------------------------------
+| LOGOUT ROUTE (Authenticated Only)
+|--------------------------------------------------------------------------
+*/
+Route::post('/logout', [LoginController::class, 'logout'])
+    ->name('logout')
+    ->middleware('auth');
 
-// Specific dashboard routes for each role
+/*
+|--------------------------------------------------------------------------
+| ADMIN ROUTES
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'adminDashboard'])->name('dashboard');
+    
+    // Tambahkan route admin lainnya di sini
+    // Route::get('/pendonor', [AdminController::class, 'pendonor'])->name('pendonor');
+    // Route::get('/kegiatan', [AdminController::class, 'kegiatan'])->name('kegiatan');
+});
+
+/*
+|--------------------------------------------------------------------------
+| STAF ROUTES
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'role:staf'])->prefix('staf')->name('staf.')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'stafDashboard'])->name('dashboard');
+    
+    // Tambahkan route staf lainnya di sini
+    // Route::get('/kegiatan', [StafController::class, 'kegiatan'])->name('kegiatan');
+});
+
+/*
+|--------------------------------------------------------------------------
+| PENDONOR ROUTES
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'role:pendonor'])->prefix('pendonor')->name('pendonor.')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'pendonorDashboard'])->name('dashboard');
+    Route::get('/riwayat-donor', [DashboardController::class, 'riwayatDonor'])->name('riwayat-donor');
+    Route::get('/riwayat-donor/export-pdf', [DashboardController::class, 'exportPDF'])->name('riwayat-donor.export-pdf');
+    
+    // Tambahkan route pendonor lainnya di sini
+    // Route::get('/kegiatan', [PendonorController::class, 'kegiatan'])->name('kegiatan');
+});
+
+/*
+|--------------------------------------------------------------------------
+| PROFILE ROUTES (All Authenticated Users)
+|--------------------------------------------------------------------------
+*/
 Route::middleware('auth')->group(function () {
-    Route::get('/admin/dashboard', [DashboardController::class, 'adminDashboard'])
-        ->middleware('role:Admin')->name('admin.dashboard');
-    
-    Route::get('/staf/dashboard', [DashboardController::class, 'stafDashboard'])
-        ->middleware('role:Staf')->name('staf.dashboard');
-    
-    Route::get('/pendonor/dashboard', [DashboardController::class, 'pendonorDashboard'])
-        ->middleware('role:Pendonor')->name('pendonor.dashboard');
+    Route::get('/profile', function () {
+        return view('profile.edit');
+    })->name('profile.edit');
 });
-
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
-
-require __DIR__.'/auth.php';

@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('permintaan_donor', function (Blueprint $table) {
-            $table->id('id_permintaan');
+            $table->id('permintaan_id');
             $table->date('tanggal_hari');
             $table->string('nama_pasien');
             $table->enum('gol_darah', ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']);

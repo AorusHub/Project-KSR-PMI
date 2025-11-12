@@ -9,8 +9,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('pendonor', function (Blueprint $table) {
-            $table->id('id_pendonor');
-            $table->foreignId('id_user')->constrained('users', 'id_user')->onDelete('cascade');
+            $table->id('pendonor_id');
+            $table->foreignId('user_id')->constrained('users', 'user_id')->onDelete('cascade');
             $table->string('NIK', 16)->unique();
             $table->text('alamat');
             $table->date('tgl_lahir');

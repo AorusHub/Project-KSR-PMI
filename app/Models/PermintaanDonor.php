@@ -11,7 +11,7 @@ class PermintaanDonor extends Model
     use HasFactory;
 
     protected $table = 'permintaan_donor';
-    protected $primaryKey = 'id_permintaan';
+    protected $primaryKey = 'permintaan_id';
 
     protected $fillable = [
         'tanggal_hari',
@@ -29,6 +29,6 @@ class PermintaanDonor extends Model
     // Relationships
     public function donasiDarah()
     {
-        return $this->hasMany(DonasiDarah::class, 'id_permintaan', 'id_permintaan');
+        return $this->hasMany(DonasiDarah::class, 'permintaan_id', 'permintaan_id');
     }
 }

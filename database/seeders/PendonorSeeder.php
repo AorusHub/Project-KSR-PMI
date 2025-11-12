@@ -12,7 +12,7 @@ class PendonorSeeder extends Seeder
     {
         DB::table('pendonor')->insert([
             [
-                'id_user' => 3, // Ahmad Pendonor
+                'user_id' => 3, // Ahmad Pendonor
                 'NIK' => '7371012345678901',
                 'alamat' => 'Jl. Perintis Kemerdekaan No. 10, Makassar',
                 'tgl_lahir' => '1995-05-15',
@@ -21,7 +21,7 @@ class PendonorSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'id_user' => 4, // Siti Pendonor
+                'user_id' => 4, // Siti Pendonor
                 'NIK' => '7371012345678902',
                 'alamat' => 'Jl. Sultan Alauddin No. 25, Makassar',
                 'tgl_lahir' => '1998-08-20',

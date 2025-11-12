@@ -11,11 +11,11 @@ class PartisipanKegiatan extends Model
     use HasFactory;
 
     protected $table = 'partisipan_kegiatan';
-    protected $primaryKey = 'id_partisipan';
+    protected $primaryKey = 'partisipan_id';
 
     protected $fillable = [
-        'id_kegiatan',
-        'id_pendonor',
+        'kegiatan_id',
+        'pendonor_id',
         'status_donasi',
         'alasan_gagal',
     ];
@@ -23,11 +23,11 @@ class PartisipanKegiatan extends Model
     // Relationships
     public function kegiatan()
     {
-        return $this->belongsTo(KegiatanDonor::class, 'id_kegiatan', 'id_kegiatan');
+        return $this->belongsTo(KegiatanDonor::class, 'kegiatan_id', 'kegiatan_id');
     }
 
     public function pendonor()
     {
-        return $this->belongsTo(Pendonor::class, 'id_pendonor', 'id_pendonor');
+        return $this->belongsTo(Pendonor::class, 'pendonor_id', 'pendonor_id');
     }
 }

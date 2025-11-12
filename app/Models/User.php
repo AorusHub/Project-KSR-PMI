@@ -1,17 +1,17 @@
 <?php
+// filepath: c:\xampp\htdocs\ksr-pmi\Project-KSR-PMI\app\Models\User.php
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use Notifiable;
 
     protected $table = 'users';
-    protected $primaryKey = 'id_user'; // Fix: use correct primary key
+    protected $primaryKey = 'user_id';
 
     protected $fillable = [
         'nama',
@@ -25,38 +25,30 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+    ];
 
-    // Relationships
+    // Relasi ke Pendonor
     public function pendonor()
     {
-        return $this->hasOne(Pendonor::class, 'id_user', 'id_user'); // Fix: use correct keys
+        return $this->hasOne(Pendonor::class, 'user_id', 'user_id');
     }
 
-    public function anggota()
-    {
-        return $this->hasOne(Anggota::class, 'id_user', 'id_user'); // Fix: use correct keys
-    }
-
-    // Helper methods for role checking
+    // Helper methods untuk cek role (gunakan lowercase)
     public function isAdmin()
     {
-        return $this->role === 'Admin';
+        return strtolower($this->role) === 'admin';
     }
 
     public function isStaf()
     {
-        return $this->role === 'Staf';
+        return strtolower($this->role) === 'staf';
     }
 
     public function isPendonor()
     {
-        return $this->role === 'Pendonor';
+        return strtolower($this->role) === 'pendonor';
     }
 }
