@@ -8,7 +8,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\KegiatanDonorController;
 use App\Http\Controllers\PageController;
-
+use App\Http\Controllers\InfoUtdController;
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES
@@ -25,6 +25,7 @@ Route::get('/faq', [PageController::class, 'faq'])->name('faq');
 Route::get('/kontak', [PageController::class, 'kontak'])->name('kontak');
 Route::post('/kontak/send', [PageController::class, 'sendKontak'])->name('kontak.send');
 Route::get('/tentang-kami', [PageController::class, 'tentangKami'])->name('tentang-kami');
+Route::get('/info-utd', [App\Http\Controllers\InfoUtdController::class, 'index'])->name('info-utd');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');

@@ -17,7 +17,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
             <!-- Logo -->
             <div class="flex items-center justify-center">
-                <img src="{{ asset('images/ksr-logo.png') }}" alt="KSR PMI UNHAS Logo" class="w-64 h-64 object-contain">
+                <img src="{{ asset('images/logo-ksr-pmi.png') }}" alt="KSR PMI UNHAS Logo" class="w-64 h-64 object-contain">
             </div>
 
             <!-- History Text -->

@@ -54,7 +54,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="{{ url('/info-utd') }}" class="text-gray-400 hover:text-white transition-colors text-sm">
+                        <a href="{{ route('info-utd')  }}" class="text-gray-400 hover:text-white transition-colors text-sm">
                             Informasi UTD/PMI
                         </a>
                     </li>
