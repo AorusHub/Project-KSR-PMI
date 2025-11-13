@@ -1,4 +1,3 @@
-{{-- filepath: c:\xampp\htdocs\ksr-pmi\Project-KSR-PMI\resources\views\FAQ.blade.php --}}
 @extends('layouts.app')
 
 @section('content')

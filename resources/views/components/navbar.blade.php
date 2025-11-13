@@ -18,7 +18,7 @@
                 <a href="{{ route('home') }}" class="text-gray-700 hover:text-red-600 font-medium transition-colors {{ request()->routeIs('home') ? 'text-red-600' : '' }}">
                     Beranda
                 </a>
-                <a href="{{ url('/kegiatan') }}" class="text-gray-700 hover:text-red-600 font-medium transition-colors">
+                <a href="{{ route('kegiatan.index') }}" class="text-gray-700 hover:text-red-600 font-medium transition-colors {{ request()->routeIs('kegiatan.*') ? 'text-red-600' : '' }}">
                     Kegiatan Donor
                 </a>
                 <a href="{{ route('tentang-kami') }}" class="text-gray-700 hover:text-red-600 font-medium transition-colors">
@@ -232,7 +232,7 @@
          style="display: none;">
         <div class="px-4 py-3 space-y-3">
             <a href="{{ route('home') }}" class="block text-gray-700 hover:text-red-600 font-medium">Beranda</a>
-            <a href="{{ url('/kegiatan') }}" class="block text-gray-700 hover:text-red-600 font-medium">Kegiatan Donor</a>
+            <a href="{{ route('kegiatan.index') }}" class="block text-gray-700 hover:text-red-600 font-medium">Kegiatan Donor</a>
             <a href="{{ url('/tentang-kami') }}" class="block text-gray-700 hover:text-red-600 font-medium">Tentang Kami</a>
             <a href="{{ url('/kontak') }}" class="block text-gray-700 hover:text-red-600 font-medium">Kontak</a>
             <a href="{{ url('/faq') }}" class="block text-gray-700 hover:text-red-600 font-medium">FAQ</a>

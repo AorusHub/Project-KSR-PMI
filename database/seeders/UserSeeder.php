@@ -1,11 +1,10 @@
 <?php
-// filepath: c:\xampp\htdocs\ksr-pmi\Project-KSR-PMI\database\seeders\UserSeeder.php
 
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 
 class UserSeeder extends Seeder
 {
@@ -13,33 +12,46 @@ class UserSeeder extends Seeder
     {
         DB::table('users')->insert([
             [
-                'nama' => 'Admin KSR PMI',
-                'email' => 'admin@ksrpmi.com',
-                'password' => Hash::make('12345678'),
+                'user_id' => 1,
+                'nama' => 'Admin PMI',
+                'email' => 'admin@pmi.com',
+                'password' => Hash::make('admin123'),
                 'role' => 'admin',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'nama' => 'Staf KSR PMI',
-                'email' => 'staf@ksrpmi.com',
-                'password' => Hash::make('12345678'),
+                'user_id' => 2,
+                'nama' => 'Staf PMI',
+                'email' => 'staf@pmi.com',
+                'password' => Hash::make('staf123'),
                 'role' => 'staf',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'nama' => 'Ahmad Pendonor',
-                'email' => 'ahmad@example.com',
-                'password' => Hash::make('12345678'),
+                'user_id' => 3,
+                'nama' => 'Ahmad Hidayat',
+                'email' => 'ahmad.pendonor@demo.com',
+                'password' => Hash::make('pendonor123'),
                 'role' => 'pendonor',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'nama' => 'Jeki Pendonor',
-                'email' => 'jeki@example.com',
-                'password' => Hash::make('12345678'),
+                'user_id' => 4,
+                'nama' => 'Siti Aisyah',
+                'email' => 'siti.pendonor@demo.com',
+                'password' => Hash::make('pendonor123'),
+                'role' => 'pendonor',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'user_id' => 5,
+                'nama' => 'Budi Santoso',
+                'email' => 'budi@demo.com',
+                'password' => Hash::make('pendonor123'),
                 'role' => 'pendonor',
                 'created_at' => now(),
                 'updated_at' => now(),

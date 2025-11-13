@@ -149,7 +149,7 @@
             </a>
 
             {{-- Manajemen Permintaan --}}
-            <a href="{{ route('admin.permintaan.index') }}" class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+            <a href="" class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
                 <div class="text-center">
                     <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                         <svg class="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
@@ -176,7 +176,7 @@
             </a>
 
             {{-- Laporan --}}
-            <a href="{{ route('admin.laporan.index') }}" class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+            <a href="" class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
                 <div class="text-center">
                     <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
                         <svg class="w-8 h-8 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
