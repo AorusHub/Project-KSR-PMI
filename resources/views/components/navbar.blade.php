@@ -21,13 +21,13 @@
                 <a href="{{ url('/kegiatan') }}" class="text-gray-700 hover:text-red-600 font-medium transition-colors">
                     Kegiatan Donor
                 </a>
-                <a href="{{ url('/tentang-kami') }}" class="text-gray-700 hover:text-red-600 font-medium transition-colors">
+                <a href="{{ route('tentang-kami') }}" class="text-gray-700 hover:text-red-600 font-medium transition-colors">
                     Tentang Kami
                 </a>
-                <a href="{{ url('/kontak') }}" class="text-gray-700 hover:text-red-600 font-medium transition-colors">
+                <a href="{{ route('kontak') }}" class="text-gray-700 hover:text-red-600 font-medium transition-colors">
                     Kontak
                 </a>
-                <a href="{{ url('/faq') }}" class="text-gray-700 hover:text-red-600 font-medium transition-colors">
+                <a href="{{ route('faq') }}" class="text-gray-700 hover:text-red-600 font-medium transition-colors">
                     FAQ
                 </a>
             </div>
