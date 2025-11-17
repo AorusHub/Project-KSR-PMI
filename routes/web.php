@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\DashboardController;
@@ -9,7 +10,6 @@ use App\Http\Controllers\KegiatanDonorController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\InfoUtdController;
 use App\Http\Controllers\Admin\UserManagementController;
-use App\Http\Controllers\Admin\KegiatanController;
 
 /*
 |--------------------------------------------------------------------------
@@ -40,6 +40,9 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [LoginController::class, 'login']);
     Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
     Route::post('/register', [RegisterController::class, 'register']);
+    Route::get('/verify-otp', [AuthController::class, 'showVerifyOTP'])->name('verify.otp.form');
+    Route::post('/verify-otp', [AuthController::class, 'verifyOTP'])->name('verify.otp');
+    Route::post('/resend-otp', [AuthController::class, 'resendOTP'])->name('resend.otp');
 });
 
 Route::post('/logout', [LoginController::class, 'logout'])
@@ -58,11 +61,11 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     
     // ✅ KEGIATAN ROUTES (untuk admin)
     Route::prefix('kegiatan')->name('kegiatan.')->group(function () {
-        Route::get('/', [KegiatanController::class, 'index'])->name('index');
-        Route::post('/', [KegiatanController::class, 'store'])->name('store');
-        Route::get('/{id}', [KegiatanController::class, 'show'])->name('show');
-        Route::put('/{id}', [KegiatanController::class, 'update'])->name('update');
-        Route::delete('/{id}', [KegiatanController::class, 'destroy'])->name('destroy');
+        Route::get('/', [KegiatanDonorController::class, 'index'])->name('index');
+        Route::post('/', [KegiatanDonorController::class, 'store'])->name('store');
+        Route::get('/{id}', [KegiatanDonorController::class, 'show'])->name('show');
+        Route::put('/{id}', [KegiatanDonorController::class, 'update'])->name('update');
+        Route::delete('/{id}', [KegiatanDonorController::class, 'destroy'])->name('destroy');
     });
     
     // USER MANAGEMENT ROUTES

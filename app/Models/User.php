@@ -1,5 +1,4 @@
 <?php
-// filepath: c:\xampp\htdocs\ksr-pmi\Project-KSR-PMI\app\Models\User.php
 
 namespace App\Models;
 
@@ -18,6 +17,9 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'otp_code',           // ✅ Tambahkan
+        'otp_expires_at',     // ✅ Tambahkan
+        'is_verified',        // ✅ Tambahkan
     ];
 
     protected $hidden = [
@@ -27,16 +29,15 @@ class User extends Authenticatable
 
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'otp_expires_at' => 'datetime',  // ✅ Tambahkan
         'password' => 'hashed',
     ];
 
-    // Relasi ke Pendonor
     public function pendonor()
     {
         return $this->hasOne(Pendonor::class, 'user_id', 'user_id');
     }
 
-    // Helper methods untuk cek role (gunakan lowercase)
     public function isAdmin()
     {
         return strtolower($this->role) === 'admin';

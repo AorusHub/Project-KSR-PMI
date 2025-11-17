@@ -16,11 +16,11 @@ return new class extends Migration
             $table->string('nama');
             $table->string('email')->unique();
             $table->string('no_hp', 15);
-            $table->string('NIK', 16)->unique();
+            $table->string('NIK', 16)->unique()->nullable();
             $table->date('tanggal_lahir');
             $table->enum('jenis_kelamin', ['Laki-laki', 'Perempuan']);
             $table->enum('golongan_darah', ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']);
-            $table->text('alamat');
+            $table->text('alamat')->nullable();
             
             $table->timestamps();
         });
