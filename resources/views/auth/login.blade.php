@@ -25,6 +25,13 @@
             <form class="space-y-6" action="{{ route('login') }}" method="POST">
                 @csrf
 
+                {{-- Success Messages --}}
+                @if (session('success'))
+                    <div class="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-lg text-sm">
+                        {{ session('success') }}
+                    </div>
+                @endif
+
                 {{-- Error Messages --}}
                 @if ($errors->any())
                     <div class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
@@ -55,9 +62,19 @@
 
                 {{-- Password --}}
                 <div>
-                    <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
-                        Password
-                    </label>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+                                Password
+                            </label>
+                        </div>
+
+                        <div class="text-sm">
+                            <a href="{{ route('password.request') }}" class="font-medium text-red-600 hover:text-red-500">
+                                Lupa password?
+                            </a>
+                        </div>
+                    </div>
                     <input 
                         id="password" 
                         name="password" 
@@ -69,7 +86,7 @@
                     >
                 </div>
 
-                {{-- Remember Me & Forgot Password --}}
+                {{-- Remember Me --}}
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
                         <input 
@@ -81,12 +98,6 @@
                         <label for="remember_me" class="ml-2 block text-sm text-gray-700 cursor-pointer">
                             Ingat saya
                         </label>
-                    </div>
-
-                    <div class="text-sm">
-                        <a href="#" class="font-medium text-red-600 hover:text-red-500">
-                            Lupa password?
-                        </a>
                     </div>
                 </div>
 
@@ -101,28 +112,7 @@
                 </div>
             </form>
 
-            {{-- Divider --}}
-            <div class="mt-6">
-                <div class="relative">
-                    <div class="absolute inset-0 flex items-center">
-                        <div class="w-full border-t border-gray-300"></div>
-                    </div>
-                    <div class="relative flex justify-center text-sm">
-                        <span class="px-2 bg-white text-gray-500">
-                            Atau kembali ke
-                        </span>
-                    </div>
-                </div>
 
-                <div class="mt-6">
-                    <a 
-                        href="{{ route('home') }}"
-                        class="w-full flex justify-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
-                    >
-                        Halaman Utama
-                    </a>
-                </div>
-            </div>
         </div>
     </div>
 </div>

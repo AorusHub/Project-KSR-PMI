@@ -29,13 +29,6 @@
             <form action="{{ route('verify.otp') }}" method="POST" class="p-6 space-y-6" id="otpForm">
                 @csrf
 
-                {{-- Success Message --}}
-                @if (session('success'))
-                    <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded text-sm">
-                        {{ session('success') }}
-                    </div>
-                @endif
-
                 {{-- Error Messages --}}
                 @if ($errors->any())
                     <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded text-sm">
@@ -153,6 +146,29 @@
     </div>
 </div>
 
+{{-- Success Modal (Popup) --}}
+<div id="successModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-sm w-full p-8 transform transition-all">
+        <div class="text-center">
+            {{-- Success Icon --}}
+            <div class="mx-auto flex items-center justify-center h-20 w-20 rounded-full border-2 border-gray-200 mb-6">
+                <svg class="h-12 w-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                </svg>
+            </div>
+            
+            {{-- Success Message --}}
+            <h3 class="text-xl font-semibold text-gray-900 mb-2">OTP Verification Successful</h3>
+            <p class="text-sm text-gray-600 mb-1">
+                Akun Anda berhasil diverifikasi!
+            </p>
+            <p class="text-xs text-gray-500">
+                Menunggu persetujuan admin untuk dapat login.
+            </p>
+        </div>
+    </div>
+</div>
+
 <script>
 const inputs = document.querySelectorAll('.otp-input');
 const form = document.getElementById('otpForm');
@@ -252,6 +268,15 @@ function resendOTP() {
     });
 }
 
+function showSuccessModal() {
+    document.getElementById('successModal').classList.remove('hidden');
+    
+    // Auto redirect after 5 seconds
+    setTimeout(() => {
+        window.location.href = "{{ route('login') }}";
+    }, 5000);
+}
+
 window.onload = function() {
     startCountdown();
 };
@@ -262,5 +287,12 @@ form.addEventListener('submit', function(e) {
         alert('Masukkan 6 digit OTP');
     }
 });
+
+// Check if OTP verification successful
+@if(session('otp_verified_success'))
+    document.addEventListener('DOMContentLoaded', function() {
+        showSuccessModal();
+    });
+@endif
 </script>
 @endsection

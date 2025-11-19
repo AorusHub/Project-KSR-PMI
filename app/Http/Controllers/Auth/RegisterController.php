@@ -99,26 +99,24 @@ class RegisterController extends Controller
             return back()->withErrors(['otp' => 'Email tidak ditemukan']);
         }
 
-        if ($user->is_verified) {
-            return redirect()->route('login')->with('info', 'Akun Anda sudah diverifikasi. Silakan tunggu persetujuan admin.');
-        }
-
         if ($user->otp_code !== $request->otp) {
             return back()->withErrors(['otp' => 'Kode OTP salah']);
         }
 
-        if (Carbon::now()->greaterThan($user->otp_expires_at)) {
+        if (now()->greaterThan($user->otp_expires_at)) {
             return back()->withErrors(['otp' => 'Kode OTP sudah kadaluarsa. Silakan kirim ulang.']);
         }
 
-        // Verifikasi berhasil
+        // OTP valid, update user as verified
         $user->update([
             'is_verified' => true,
             'otp_code' => null,
             'otp_expires_at' => null,
         ]);
 
-        return redirect()->route('login')->with('success', 'Verifikasi berhasil! Akun Anda sedang menunggu persetujuan admin.');
+        // Redirect back dengan flag success untuk show popup
+        return redirect()->route('otp.verify', ['email' => $user->email])
+            ->with('otp_verified_success', true);
     }
 
     public function resendOtp(Request $request)

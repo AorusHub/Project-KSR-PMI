@@ -10,6 +10,8 @@ use App\Http\Controllers\KegiatanDonorController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\InfoUtdController;
 use App\Http\Controllers\Admin\UserManagementController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
 
 /*
 |--------------------------------------------------------------------------
@@ -48,6 +50,18 @@ Route::middleware('guest')->group(function () {
     Route::post('/verify-otp', [RegisterController::class, 'verifyOtp'])->name('verify.otp');
     Route::post('/resend-otp', [RegisterController::class, 'resendOtp'])->name('resend.otp');
 
+    // Forgot Password Routes
+    Route::get('/forgot-email', [ForgotPasswordController::class, 'create'])->name('password.request');
+    Route::post('/forgot-email', [ForgotPasswordController::class, 'store'])->name('password.email');
+
+    // Forgot Password OTP Routes
+    Route::get('/verify-forgot-otp', [ForgotPasswordController::class, 'showVerifyOtpForm'])->name('password.verify.otp.form');
+    Route::post('/verify-forgot-otp', [ForgotPasswordController::class, 'verifyOtp'])->name('password.verify.otp');
+    Route::post('/resend-forgot-otp', [ForgotPasswordController::class, 'resendOtp'])->name('password.resend.otp');
+
+    // Reset Password Routes (Halaman input password baru)
+    Route::get('/forgot-password/{token}', [ResetPasswordController::class, 'create'])->name('password.reset');
+    Route::post('/forgot-password', [ResetPasswordController::class, 'store'])->name('password.update');
 });
 
 Route::post('/logout', [LoginController::class, 'logout'])
