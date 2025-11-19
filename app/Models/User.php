@@ -19,7 +19,7 @@ class User extends Authenticatable
         'role',
         'otp_code',           // ✅ Tambahkan
         'otp_expires_at',     // ✅ Tambahkan
-        'is_verified',        // ✅ Tambahkan
+        'is_verified',
     ];
 
     protected $hidden = [
@@ -29,8 +29,8 @@ class User extends Authenticatable
 
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'otp_expires_at' => 'datetime',  // ✅ Tambahkan
-        'password' => 'hashed',
+        'otp_expires_at' => 'datetime',
+        'is_verified' => 'boolean',
     ];
 
     public function pendonor()

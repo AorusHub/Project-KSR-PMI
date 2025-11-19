@@ -14,6 +14,9 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('password');
             $table->enum('role', ['pendonor', 'staf', 'admin'])->default('pendonor');
+            $table->string('otp_code')->nullable(); //yang ditambahkan
+            $table->dateTime('otp_expires_at')->nullable(); //yang ditambahkan
+            $table->boolean('is_verified')->default(false); //yang ditambahka
             $table->rememberToken();
             $table->timestamps();
         });

@@ -38,11 +38,16 @@ Route::get('/info-utd', [InfoUtdController::class, 'index'])->name('info-utd');
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [LoginController::class, 'login']);
+    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
     Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
     Route::post('/register', [RegisterController::class, 'register']);
-    Route::get('/verify-otp', [AuthController::class, 'showVerifyOTP'])->name('verify.otp.form');
-    Route::post('/verify-otp', [AuthController::class, 'verifyOTP'])->name('verify.otp');
-    Route::post('/resend-otp', [AuthController::class, 'resendOTP'])->name('resend.otp');
+
+    // OTP Routes
+    Route::get('/verify-otp', [RegisterController::class, 'showOtpForm'])->name('otp.verify');
+    Route::post('/verify-otp', [RegisterController::class, 'verifyOtp'])->name('verify.otp');
+    Route::post('/resend-otp', [RegisterController::class, 'resendOtp'])->name('resend.otp');
+
 });
 
 Route::post('/logout', [LoginController::class, 'logout'])

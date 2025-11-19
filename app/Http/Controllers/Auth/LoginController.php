@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use App\Models\User;
 
 class LoginController extends Controller
 {
@@ -21,6 +22,17 @@ class LoginController extends Controller
             'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
+
+        $user = User::where('email', $request->email)->first();
+        
+        if ($user) {
+            // Cek verifikasi OTP
+            if (!$user->is_verified) {
+                return back()->withErrors([
+                    'email' => 'Akun Anda belum diverifikasi. Silakan cek email untuk verifikasi OTP terlebih dahulu.',
+                ])->withInput($request->only('email'));
+            }
+        }
 
         if (Auth::attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();

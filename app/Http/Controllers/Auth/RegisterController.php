@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\RegisterOTP as OtpMail;
+use Carbon\Carbon;
 
 class RegisterController extends Controller
 {
@@ -32,11 +35,18 @@ class RegisterController extends Controller
         DB::beginTransaction();
         try {
             // Buat user
+            $otpCode = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
+            $otpExpiresAt = Carbon::now()->addMinutes(10);
+
+            // Buat user dengan OTP
             $user = User::create([
                 'nama' => $request->nama,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'role' => 'pendonor',
+                'otp_code' => $otpCode,
+                'otp_expires_at' => $otpExpiresAt,
+                'is_verified' => false,
             ]);
 
             // Buat data pendonor
@@ -52,12 +62,13 @@ class RegisterController extends Controller
                 'alamat' => $request->alamat,
             ]);
 
+            Mail::to($user->email)->send(new OtpMail($otpCode, $user->nama));
+            
             DB::commit();
 
             event(new Registered($user));
-            Auth::login($user);
-
-            return redirect()->route('home')->with('success', 'Pendaftaran berhasil! Selamat datang di KSR PMI UNHAS.');
+            return redirect()->route('otp.verify', ['email' => $user->email])
+                ->with('success', 'Registrasi berhasil! Silakan verifikasi kode OTP yang dikirim ke email Anda.');
 
         } catch (\Exception $e) {
             DB::rollback();
@@ -69,6 +80,75 @@ class RegisterController extends Controller
         }
     }
 
+    public function showOtpForm(Request $request)
+    {
+        $email = $request->query('email');
+        return view('auth.verify-otp', compact('email'));
+    }
+
+    public function verifyOtp(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'otp' => 'required|string|size:6',
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return back()->withErrors(['otp' => 'Email tidak ditemukan']);
+        }
+
+        if ($user->is_verified) {
+            return redirect()->route('login')->with('info', 'Akun Anda sudah diverifikasi. Silakan tunggu persetujuan admin.');
+        }
+
+        if ($user->otp_code !== $request->otp) {
+            return back()->withErrors(['otp' => 'Kode OTP salah']);
+        }
+
+        if (Carbon::now()->greaterThan($user->otp_expires_at)) {
+            return back()->withErrors(['otp' => 'Kode OTP sudah kadaluarsa. Silakan kirim ulang.']);
+        }
+
+        // Verifikasi berhasil
+        $user->update([
+            'is_verified' => true,
+            'otp_code' => null,
+            'otp_expires_at' => null,
+        ]);
+
+        return redirect()->route('login')->with('success', 'Verifikasi berhasil! Akun Anda sedang menunggu persetujuan admin.');
+    }
+
+    public function resendOtp(Request $request)
+    {
+        $request->validate(['email' => 'required|email']);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return back()->withErrors(['email' => 'Email tidak ditemukan']);
+        }
+
+        if ($user->is_verified) {
+            return back()->withErrors(['email' => 'Akun sudah diverifikasi']);
+        }
+
+        // Generate OTP baru
+        $otpCode = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
+        $otpExpiresAt = Carbon::now()->addMinutes(10);
+
+        $user->update([
+            'otp_code' => $otpCode,
+            'otp_expires_at' => $otpExpiresAt,
+        ]);
+
+        // TODO: Kirim OTP via Email
+        Mail::to($user->email)->send(new OtpMail($otpCode, $user->nama));
+
+        return back()->with('success', 'Kode OTP baru telah dikirim ke email Anda');
+    }
         protected function validator(array $data)
     {
         return Validator::make($data, [
