@@ -40,7 +40,6 @@ Route::get('/info-utd', [InfoUtdController::class, 'index'])->name('info-utd');
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [LoginController::class, 'login']);
-    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
     Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
     Route::post('/register', [RegisterController::class, 'register']);
@@ -64,9 +63,7 @@ Route::middleware('guest')->group(function () {
     Route::post('/forgot-password', [ResetPasswordController::class, 'store'])->name('password.update');
 });
 
-Route::post('/logout', [LoginController::class, 'logout'])
-    ->name('logout')
-    ->middleware('auth');
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
 
 /*
 |--------------------------------------------------------------------------
@@ -112,6 +109,13 @@ Route::middleware(['auth', 'role:staf'])->prefix('staf')->name('staf.')->group(f
 Route::middleware(['auth', 'role:pendonor'])->prefix('pendonor')->name('pendonor.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'pendonorDashboard'])->name('dashboard');
     Route::get('/riwayat-donor', [DashboardController::class, 'riwayatDonor'])->name('riwayat-donor');
+
+    // Cek Kelayakan
+    Route::get('/cek-kelayakan', [DashboardController::class, 'cekKelayakan'])->name('cek-kelayakan');
+    Route::get('/riwayat-donor/export-pdf', [DashboardController::class, 'exportPdf'])->name('riwayat-donor.export-pdf');
+    // Profile
+    Route::get('/profil', [DashboardController::class, 'profil'])->name('profil');
+    Route::put('/profil', [DashboardController::class, 'updateProfil'])->name('profil.update');
 });
 
 /*
