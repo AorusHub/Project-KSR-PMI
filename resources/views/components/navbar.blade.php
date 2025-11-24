@@ -136,9 +136,24 @@
                     </div>
 
                     {{-- Dashboard Button --}}
-                    <a href="{{ $dashboardRoute }}" class="hidden sm:inline-flex items-center px-4 lg:px-5 py-2 bg-white border border-gray-300 text-gray-800 font-semibold rounded-lg hover:border-red-600 hover:text-red-600 transition-all text-xs lg:text-sm">
-                        Dashboard
-                    </a>
+                    @php //baru ditambah 
+    $isDashboardActive = false;
+    if ($user->isPendonor() && request()->routeIs('pendonor.*')) {
+        $isDashboardActive = true;
+    } elseif ($user->isAdmin() && request()->routeIs('admin.*')) {
+        $isDashboardActive = true;
+    } elseif ($user->isStaf() && request()->routeIs('staf.*')) {
+        $isDashboardActive = true;
+    }
+@endphp
+<a href="{{ $dashboardRoute }}" 
+   class="hidden sm:inline-flex items-center px-4 lg:px-5 py-2 font-semibold rounded-lg transition-all text-xs lg:text-sm
+          {{ $isDashboardActive 
+             ? 'bg-red-600 text-white shadow-md border-red-600' 
+             : 'bg-white border border-gray-300 text-gray-800 hover:border-red-600 hover:text-red-600' }}">
+    Dashboard
+</a> 
+
 
                     {{-- User Dropdown --}}
                     <div class="relative" x-data="{ dropdownOpen: false }">

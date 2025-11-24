@@ -112,13 +112,15 @@ Route::middleware(['auth', 'role:pendonor'])->prefix('pendonor')->name('pendonor
 
     // Cek Kelayakan
     Route::get('/cek-kelayakan', [DashboardController::class, 'cekKelayakan'])->name('cek-kelayakan');
+    Route::get('/cek-kelayakan-donor', [DashboardController::class, 'cekKelayakanDonor'])->name('cek-kelayakan-donor'); // ✅ TAMBAHKAN INI
     Route::get('/riwayat-donor/export-pdf', [DashboardController::class, 'exportPdf'])->name('riwayat-donor.export-pdf');
+    Route::post('/cek-kelayakan-donor/submit', [DashboardController::class, 'submitKelayakan'])->name('cek-kelayakan.submit');
     // Profile
     Route::get('/profil', [DashboardController::class, 'profil'])->name('profil');
     Route::put('/profil', [DashboardController::class, 'updateProfil'])->name('profil.update');
 });
 
-/*
+/*  
 |--------------------------------------------------------------------------
 | PROFILE ROUTES
 |--------------------------------------------------------------------------
