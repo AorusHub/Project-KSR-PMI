@@ -25,10 +25,22 @@
                 <div class="flex flex-wrap gap-3 pt-4">
                     <a href="{{ route('kegiatan.index') }}" class="px-6 py-2.5 bg-white text-red-600 text-sm font-semibold rounded-md hover:bg-gray-100 transition-all shadow-lg">
                         Cari Kegiatan Donor
-                    </a>
-                    <a href="{{route('kegiatan.index') }}" class="px-6 py-2.5 bg-transparent border-2 border-white text-white text-sm font-semibold rounded-md hover:bg-white hover:text-red-600 transition-all">
-                        Butuh Darah Cepat?
-                    </a>
+                    @auth
+                        @if(Auth::user()->role === 'pendonor')
+                            <a href="{{ route('pendonor.permintaan-darah.create') }}" class="px-6 py-2.5 bg-transparent border-2 border-white text-white text-sm font-semibold rounded-md hover:bg-white hover:text-red-600 transition-all">
+                                Butuh Darah Cepat?
+                            </a>
+                        @else
+                            <a href="{{ route('login') }}" class="px-6 py-2.5 bg-transparent border-2 border-white text-white text-sm font-semibold rounded-md hover:bg-white hover:text-red-600 transition-all">
+                                Butuh Darah Cepat?
+                            </a>
+                        @endif
+                    @else
+                        <a href="{{ route('login') }}" class="px-6 py-2.5 bg-transparent border-2 border-white text-white text-sm font-semibold rounded-md hover:bg-white hover:text-red-600 transition-all">
+                            Butuh Darah Cepat?
+                        </a>
+                    @endauth
+                    
                     <a href="#kegiatan" class="px-6 py-2.5 bg-white text-red-600 text-sm font-semibold rounded-md hover:bg-gray-100 transition-all shadow-lg">
                         Lihat Donor Darurat
                     </a>
@@ -282,8 +294,8 @@
                     <a href="{{ route('register') }}" class="px-6 py-2.5 bg-white text-red-600 text-sm font-semibold rounded-lg hover:bg-gray-100 transition-all shadow-lg">
                         Daftar Sebagai Pendonor
                     </a>
-                    <a href="{{ url('/permintaan-donor') }}" class="px-6 py-2.5 bg-transparent border-2 border-white text-white text-sm font-semibold rounded-lg hover:bg-white hover:text-red-600 transition-all">
-                        Cek Kelayakan Donor
+                   <a href="{{ route('login') }}" class="px-6 py-2.5 bg-transparent border-2 border-white text-white text-sm font-semibold rounded-lg hover:bg-white hover:text-red-600 transition-all">
+                    Butuh Darah Cepat?
                     </a>
                 </div>
             </div>

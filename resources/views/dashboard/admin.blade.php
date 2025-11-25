@@ -136,7 +136,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
             
             {{-- Manajemen Kegiatan --}}
-            <a href="{{ route('admin.kegiatan.index') }}" class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+            <a href="{{ route('managemen.kegiatan.index') }}" class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
                 <div class="text-center">
                     <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                         <svg class="w-8 h-8 text-red-600" fill="currentColor" viewBox="0 0 20 20">

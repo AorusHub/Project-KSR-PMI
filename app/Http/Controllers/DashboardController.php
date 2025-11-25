@@ -77,24 +77,63 @@ public function adminDashboard()
     // Dashboard Staf
     public function stafDashboard()
     {
-        $kegiatanPlanned = KegiatanDonor::where('status_permintaan', 'Approved')
-            ->orderBy('tanggal', 'desc')
-            ->take(5)
-            ->get();
-        
-        $permintaanPending = PermintaanDonor::where('status_permintaan', 'Pending')
-            ->orderBy('created_at', 'desc')
-            ->take(5)
-            ->get();
-        
-        $totalPendonor = Pendonor::count();
+        // Stats untuk dashboard staf
+        $permintaanBaru = 2; // Nanti diganti dengan query real
+        $kegiatanAktif = KegiatanDonor::whereIn('status', ['Planned', 'Ongoing'])->count();
+        $partisipanBulanIni = DonasiDarah::whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->count();
         $totalKegiatan = KegiatanDonor::count();
+        $menungguVerifikasi = 3; // Nanti diganti dengan query real
+        $historyVerifikasi = 3; // Nanti diganti dengan query real
+
+        // Permintaan Donor Terbaru (dummy data dulu)
+        $permintaanTerbaru = collect([
+            (object)[
+                'nama_pasien' => 'abc',
+                'golongan_darah' => 'A+',
+                'jumlah_kantong' => 1,
+                'status' => 'Baru'
+            ],
+            (object)[
+                'nama_pasien' => 'Ahmad Hidayat',
+                'golongan_darah' => 'A+',
+                'jumlah_kantong' => 2,
+                'status' => 'Baru'
+            ],
+            (object)[
+                'nama_pasien' => 'Andi Baso',
+                'golongan_darah' => 'O+',
+                'jumlah_kantong' => 3,
+                'status' => 'Diproses'
+            ],
+            (object)[
+                'nama_pasien' => 'Fatimah Zahra',
+                'golongan_darah' => 'B+',
+                'jumlah_kantong' => 1,
+                'status' => 'Terpenuhi'
+            ],
+        ]);
+
+        // Kegiatan yang Sedang Berjalan
+        $kegiatanBerjalan = KegiatanDonor::whereIn('status', ['Planned', 'Ongoing'])
+            ->orderBy('tanggal', 'asc')
+            ->take(5)
+            ->get();
+
+        // Permintaan Darurat
+        $permintaanDarurat = 0; // Nanti diganti dengan query real
 
         return view('dashboard.staf', compact(
-            'kegiatanPlanned',
-            'permintaanPending',
-            'totalPendonor',
-            'totalKegiatan'
+            'permintaanBaru',
+            'kegiatanAktif',
+            'partisipanBulanIni',
+            'totalKegiatan',
+            'menungguVerifikasi',
+            'historyVerifikasi',
+            'permintaanTerbaru',
+            'kegiatanBerjalan',
+            'permintaanDarurat'
         ));
     }
 
@@ -150,6 +189,7 @@ public function adminDashboard()
             'bisaDonor'
         ));
     }
+    
 
     // Halaman Riwayat Donor (Detail)
     public function riwayatDonor()

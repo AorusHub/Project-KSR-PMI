@@ -83,9 +83,44 @@ class KegiatanDonorController extends Controller
     // Admin: Daftar semua kegiatan (Manajemen Kegiatan)
     public function adminIndex()
     {
+        // Cek role user
+        if (!in_array(Auth::user()->role, ['admin', 'staf'])) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $kegiatan = KegiatanDonor::with('donasiDarah')
             ->orderBy('tanggal', 'desc')
-            ->paginate(15);
+            ->get()
+            ->map(function($item) {
+                // Hitung partisipan
+                $item->partisipan = $item->donasiDarah->count();
+                
+                // Format tanggal
+                $item->tanggal_formatted = \Carbon\Carbon::parse($item->tanggal)->translatedFormat('d F Y');
+                
+                // Tentukan status badge
+                $now = now();
+                $tanggalKegiatan = \Carbon\Carbon::parse($item->tanggal);
+                
+                if ($item->status === 'Ongoing') {
+                    $item->status_label = 'Berlangsung';
+                    $item->status_color = 'green';
+                } elseif ($item->status === 'Completed') {
+                    $item->status_label = 'Selesai';
+                    $item->status_color = 'gray';
+                } elseif ($item->status === 'Cancelled') {
+                    $item->status_label = 'Dibatalkan';
+                    $item->status_color = 'red';
+                } elseif ($tanggalKegiatan->isFuture()) {
+                    $item->status_label = 'Akan Datang';
+                    $item->status_color = 'blue';
+                } else {
+                    $item->status_label = 'Berlangsung';
+                    $item->status_color = 'green';
+                }
+                
+                return $item;
+            });
         
         return view('dashboard.dev.managemen_kegiatan', compact('kegiatan'));
     }
@@ -115,9 +150,18 @@ class KegiatanDonorController extends Controller
         if (empty($validated['waktu_selesai'])) {
             $validated['waktu_selesai'] = '14:00';
         }
+        
         KegiatanDonor::create($validated);
 
-        return redirect()->route('admin.kegiatan.index')
+        // Check if it's an AJAX request
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Kegiatan donor berhasil ditambahkan!'
+            ]);
+        }
+
+        return redirect()->route('managemen.kegiatan.index')
             ->with('success', 'Kegiatan donor berhasil ditambahkan!');
     }
 
@@ -131,22 +175,42 @@ class KegiatanDonorController extends Controller
     // Admin: Update kegiatan
     public function update(Request $request, $id)
     {
-        $validated = $request->validate([
-            'nama_kegiatan' => 'required|string|max:100',
-            'tanggal' => 'required|date',
-            'waktu_mulai' => 'required',
-            'waktu_selesai' => 'required',
-            'lokasi' => 'required|string|max:200',
-            'deskripsi' => 'nullable|string',
-            'target_donor' => 'nullable|integer|min:0',
-            'status' => 'required|in:Planned,Ongoing,Completed,Cancelled',
-        ]);
+        try {
+            $validated = $request->validate([
+                'nama_kegiatan' => 'required|string|max:100',
+                'tanggal' => 'required|date',
+                'waktu_mulai' => 'required',
+                'waktu_selesai' => 'required',
+                'lokasi' => 'required|string|max:200',
+                'deskripsi' => 'nullable|string',
+                'target_donor' => 'nullable|integer|min:0',
+                'status' => 'required|in:Planned,Ongoing,Completed,Cancelled',
+            ]);
 
-        $kegiatan = KegiatanDonor::findOrFail($id);
-        $kegiatan->update($validated);
+            $kegiatan = KegiatanDonor::findOrFail($id);
+            $kegiatan->update($validated);
 
-        return redirect()->route('admin.kegiatan.index')
-            ->with('success', 'Kegiatan donor berhasil diupdate!');
+            // Check if it's an AJAX request
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Kegiatan donor berhasil diupdate!'
+                ]);
+            }
+
+            return redirect()->route('managemen.kegiatan.index')
+                ->with('success', 'Kegiatan donor berhasil diupdate!');
+        } catch (\Exception $e) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                ], 500);
+            }
+
+            return redirect()->back()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
 
     // Admin: Delete kegiatan

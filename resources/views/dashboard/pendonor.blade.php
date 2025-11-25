@@ -217,19 +217,31 @@
                     </p>
                 </div>
 
-                {{-- Action Buttons --}}
-               <div class="bg-white rounded-lg shadow-sm p-6">
+                {{-- ✅ Action Buttons - TAMBAHKAN TOMBOL BUTUH DARAH CEPAT --}}
+                <div class="bg-white rounded-lg shadow-sm p-6">
                     <h3 class="font-bold text-gray-900 mb-4">Aksi Cepat</h3>
                     <div class="space-y-3">
-                        <a href="{{ route('kegiatan.index') }}" class="w-full flex items-center justify-center px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
+                        {{-- ✅ TOMBOL BUTUH DARAH CEPAT --}}
+                        <a href="{{ route('pendonor.permintaan-darah.create') }}" 
+                           class="w-full flex items-center justify-center px-4 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition-all duration-300 font-medium shadow-lg transform hover:scale-105">
+                            <svg class="w-5 h-5 mr-2 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="font-bold">🚨 Butuh Darah Cepat</span>
+                        </a>
+                        
+                        <a href="{{ route('kegiatan.index') }}" 
+                           class="w-full flex items-center justify-center px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
                             <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
                             </svg>
                             Cari Kegiatan Donor
                         </a>
-                        <a href="{{ route('pendonor.cek-kelayakan-donor') }}" class="w-full flex items-center justify-center px-4 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+                        
+                        <a href="{{ route('pendonor.cek-kelayakan-donor') }}" 
+                           class="w-full flex items-center justify-center px-4 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium">
                             <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/>
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                             </svg>
                             Cek Kelayakan Donor
                         </a>

@@ -4,6 +4,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use HasFactory;
 
 class KegiatanDonor extends Model
 {
@@ -38,5 +39,33 @@ class KegiatanDonor extends Model
     public function donasiDarah()
     {
         return $this->hasMany(DonasiDarah::class, 'kegiatan_id', 'kegiatan_id');
+    }
+
+    /**
+     * Get badge color based on status
+     */
+    public function getStatusBadgeAttribute()
+    {
+        return match($this->status) {
+            'Planned' => 'bg-blue-100 text-blue-800',
+            'Ongoing' => 'bg-green-100 text-green-800',
+            'Completed' => 'bg-gray-100 text-gray-800',
+            'Cancelled' => 'bg-red-100 text-red-800',
+            default => 'bg-gray-100 text-gray-800',
+        };
+    }
+
+    /**
+     * Get status label
+     */
+    public function getStatusLabelAttribute()
+    {
+        return match($this->status) {
+            'Planned' => 'Akan Datang',
+            'Ongoing' => 'Berlangsung',
+            'Completed' => 'Selesai',
+            'Cancelled' => 'Dibatalkan',
+            default => 'Unknown',
+        };
     }
 }

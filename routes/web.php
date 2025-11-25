@@ -12,7 +12,7 @@ use App\Http\Controllers\InfoUtdController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
-
+use App\Http\Controllers\PermintaanDonorController;
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES
@@ -75,15 +75,6 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'adminDashboard'])->name('dashboard');
     
-    // ✅ KEGIATAN ROUTES (untuk admin)
-    Route::prefix('kegiatan')->name('kegiatan.')->group(function () {
-        Route::get('/', [KegiatanDonorController::class, 'index'])->name('index');
-        Route::post('/', [KegiatanDonorController::class, 'store'])->name('store');
-        Route::get('/{id}', [KegiatanDonorController::class, 'show'])->name('show');
-        Route::put('/{id}', [KegiatanDonorController::class, 'update'])->name('update');
-        Route::delete('/{id}', [KegiatanDonorController::class, 'destroy'])->name('destroy');
-    });
-    
     // USER MANAGEMENT ROUTES
     Route::prefix('users')->name('users.')->group(function () {
         Route::get('/', [UserManagementController::class, 'index'])->name('index');
@@ -99,6 +90,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 */
 Route::middleware(['auth', 'role:staf'])->prefix('staf')->name('staf.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'stafDashboard'])->name('dashboard');
+
 });
 
 /*
@@ -115,9 +107,44 @@ Route::middleware(['auth', 'role:pendonor'])->prefix('pendonor')->name('pendonor
     Route::get('/cek-kelayakan-donor', [DashboardController::class, 'cekKelayakanDonor'])->name('cek-kelayakan-donor'); // ✅ TAMBAHKAN INI
     Route::get('/riwayat-donor/export-pdf', [DashboardController::class, 'exportPdf'])->name('riwayat-donor.export-pdf');
     Route::post('/cek-kelayakan-donor/submit', [DashboardController::class, 'submitKelayakan'])->name('cek-kelayakan.submit');
+
+    // Butuh Darah Cepat
+    // Route::get('/butuh-darah-cepat', [DashboardController::class, 'butuhDarahCepat'])->name('butuh-darah-cepat');
+
+    // Formulir Permintaan Darah
+    Route::get('/formulir-permintaan-darah', [PermintaanDonorController::class, 'create'])->name('permintaan-darah.create');
+    Route::post('/formulir-permintaan-darah', [PermintaanDonorController::class, 'store'])->name('permintaan-darah.simpan');
+    Route::get('/permintaan-darah/{id}/sukses', [PermintaanDonorController::class, 'success'])->name('permintaan-darah.sukses');
+    
     // Profile
     Route::get('/profil', [DashboardController::class, 'profil'])->name('profil');
     Route::put('/profil', [DashboardController::class, 'updateProfil'])->name('profil.update');
+});
+
+/*
+|--------------------------------------------------------------------------
+| ADMIN & STAF SHARED ROUTES
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth'])->group(function () {
+    // ✅ MANAJEMEN KEGIATAN (Admin & Staf)
+    Route::get('/managemen-kegiatan', [KegiatanDonorController::class, 'adminIndex'])
+        ->name('managemen.kegiatan.index');
+    
+    Route::get('/managemen-kegiatan/create', [KegiatanDonorController::class, 'create'])
+        ->name('managemen.kegiatan.create');
+    
+    Route::post('/managemen-kegiatan', [KegiatanDonorController::class, 'store'])
+        ->name('managemen.kegiatan.store');
+    
+    Route::get('/managemen-kegiatan/{id}/edit', [KegiatanDonorController::class, 'edit'])
+        ->name('managemen.kegiatan.edit');
+    
+    Route::put('/managemen-kegiatan/{id}', [KegiatanDonorController::class, 'update'])
+        ->name('managemen.kegiatan.update');
+    
+    Route::delete('/managemen-kegiatan/{id}', [KegiatanDonorController::class, 'destroy'])
+        ->name('managemen.kegiatan.destroy');                     
 });
 
 /*  
