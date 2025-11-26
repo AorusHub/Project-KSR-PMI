@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             KegiatanDonorSeeder::class,
             PermintaanDonorSeeder::class,
             InfoUtdSeeder::class,
+            DonasiDarahSeeder::class,
         ]);
     }
 }
