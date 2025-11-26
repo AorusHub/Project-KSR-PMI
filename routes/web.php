@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\PermintaanDonorController;
+use App\Http\Controllers\Admin\LaporanController;
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES
@@ -81,6 +82,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         Route::get('/{id}/riwayat', [UserManagementController::class, 'riwayatDonasi'])->name('riwayat');
         Route::delete('/{id}', [UserManagementController::class, 'destroy'])->name('destroy');
     });
+
+    Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
 });
 
 /*
