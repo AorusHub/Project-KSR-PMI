@@ -86,7 +86,7 @@ public function adminDashboard()
         $totalKegiatan = KegiatanDonor::count();
         $menungguVerifikasi = 3; // Nanti diganti dengan query real
         $historyVerifikasi = 3; // Nanti diganti dengan query real
-
+        
         // Permintaan Donor Terbaru (dummy data dulu)
         $permintaanTerbaru = collect([
             (object)[
@@ -118,7 +118,7 @@ public function adminDashboard()
         // Kegiatan yang Sedang Berjalan
         $kegiatanBerjalan = KegiatanDonor::whereIn('status', ['Planned', 'Ongoing'])
             ->orderBy('tanggal', 'asc')
-            ->take(5)
+            ->take(4)
             ->get();
 
         // Permintaan Darurat

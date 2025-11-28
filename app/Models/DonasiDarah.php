@@ -17,9 +17,6 @@ class DonasiDarah extends Model
         'lokasi_donasi',
         'volume_darah',
         'status_donasi',
-        'catatan',
-        'verified_by',
-        'verified_at',
     ];
 
     protected $casts = [
@@ -39,6 +36,11 @@ class DonasiDarah extends Model
         return $this->belongsTo(KegiatanDonor::class, 'kegiatan_id', 'kegiatan_id');
     }
 
+        public function permintaan()
+    {
+        return $this->belongsTo(PermintaanDonor::class, 'permintaan_id', 'permintaan_id');
+    }
+    
     // Relasi ke User yang verifikasi
     public function verifier()
     {

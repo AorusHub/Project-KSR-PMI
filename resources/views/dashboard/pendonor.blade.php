@@ -51,7 +51,7 @@
                     </div>
                 </div>
                 <p class="text-3xl font-bold text-gray-900">
-                    {{ $donasiTerakhir ? $donasiTerakhir->tgl_donasi->format('d/m/Y') : '17/9/2025' }}
+                    {{ $donasiTerakhir ? $donasiTerakhir->tanggal_donasi->format('d/m/Y') : '17/9/2025' }}
                 </p>
                 <p class="text-xs text-gray-500 mt-1">
                     {{ $donasiTerakhir ? $donasiTerakhir->lokasi_donor : 'PMI Kota Makassar' }}
@@ -101,7 +101,7 @@
                                 <tbody class="divide-y divide-gray-200">
                                     @forelse($riwayatDonasi ?? [] as $donasi)
                                     <tr class="text-sm">
-                                        <td class="py-3 text-gray-900">{{ $donasi->tgl_donasi->format('d/m/Y') }}</td>
+                                        <td class="py-3 text-gray-900">{{ $donasi->tanggal_donasi->format('d/m/Y') }}</td>
                                         <td class="py-3 text-gray-700">{{ $donasi->jenis_donor ?? 'Donor Darah Sukarela' }}</td>
                                         <td class="py-3 text-gray-700">{{ $donasi->lokasi_donor }}</td>
                                         <td class="py-3">

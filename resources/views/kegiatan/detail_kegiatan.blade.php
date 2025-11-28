@@ -1,4 +1,4 @@
-{{-- filepath: c:\xampp\htdocs\ksr-pmi\Project-KSR-PMI\resources\views\kegiatan\detail_kegiatan.blade.php --}}
+ {{-- filepath: c:\xampp\htdocs\ksr-pmi\Project-KSR-PMI\resources\views\kegiatan\detail_kegiatan.blade.php --}}
 @extends('layouts.app')
 
 @section('content')
@@ -104,7 +104,7 @@
                             </div>
                             <div>
                                 <p class="text-xs text-gray-600 mb-0.5">Tanggal</p>
-                                <p class="text-sm text-gray-900 font-semibold">{{ \Carbon\Carbon::parse($kegiatan->tanggal)->locale('id')->isoFormat('D MMMM YYYY') }}</p>
+                                <p class="text-sm text-gray-900 font-semibold">{{ \Carbon\Carbon::parse($kegiatan->tanggal)->format('d F Y') }}</p>
                             </div>
                         </div>
 
@@ -150,10 +150,10 @@
 
                        {{-- ✅ BUTTON BERDASARKAN ROLE --}}
                         @auth
-                            @if(in_array(auth()->user()->role, ['admin', 'staf']))
+                            @if(auth()->user()->staf or auth()->user()->admin)
                                 {{-- ✅ BUTTON UNTUK ADMIN & STAF: Lihat Peserta --}}
-                                <a href="{{ route('kegiatan.peserta', $kegiatan->kegiatan_id) }}" 
-                                   class="block w-full py-3 rounded-lg font-bold text-white text-sm text-center transition-all duration-200 shadow-md bg-blue-600 hover:bg-blue-700">
+                                <a href="{{ route('kegiatan.donor', $kegiatan->kegiatan_id) }}" 
+                                class="block w-full py-3 rounded-lg font-bold text-white text-sm text-center transition-all duration-200 shadow-md bg-red-600 hover:bg-red-700">
                                     <div class="flex items-center justify-center">
                                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
@@ -165,6 +165,7 @@
                                 {{-- ✅ BUTTON UNTUK PENDONOR: Daftar Kegiatan --}}
                                 @php
                                     $sudahDaftar = false;
+                                    // ✅ CEK DULU apakah user punya data pendonor
                                     if(auth()->user()->pendonor) {
                                         $sudahDaftar = $kegiatan->donasiDarah()
                                             ->where('pendonor_id', auth()->user()->pendonor->pendonor_id)
@@ -172,13 +173,26 @@
                                     }
                                 @endphp
 
-                                <button onclick="handleDaftar({{ $kegiatan->kegiatan_id }}, {{ $sudahDaftar ? 'true' : 'false' }})" 
-                                        id="btnDaftar"
-                                        class="w-full py-3 rounded-lg font-bold text-white text-sm transition-all duration-200 shadow-md
-                                        {{ $sudahDaftar ? 'bg-gray-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700' }}"
-                                        {{ $sudahDaftar ? 'disabled' : '' }}>
-                                    {{ $sudahDaftar ? '✓ Sudah Terdaftar' : 'Daftar Kegiatan' }}
-                                </button>
+                                @if(auth()->user()->pendonor)
+                                    {{-- ✅ Jika punya data pendonor, tampilkan button daftar --}}
+                                    <button onclick="handleDaftar({{ $kegiatan->kegiatan_id }}, {{ $sudahDaftar ? 'true' : 'false' }})" 
+                                            id="btnDaftar"
+                                            class="w-full py-3 rounded-lg font-bold text-white text-sm transition-all duration-200 shadow-md
+                                            {{ $sudahDaftar ? 'bg-gray-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700' }}"
+                                            {{ $sudahDaftar ? 'disabled' : '' }}>
+                                        {{ $sudahDaftar ? '✓ Sudah Terdaftar' : 'Daftar Kegiatan' }}
+                                    </button>
+                                @else
+                                <a href="{{ route('kegiatan.peserta', $kegiatan->kegiatan_id) }}" 
+                                class="block w-full py-3 rounded-lg font-bold text-white text-sm text-center transition-all duration-200 shadow-md bg-red-600 hover:bg-red-700">
+                                    <div class="flex items-center justify-center">
+                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                                        </svg>
+                                        Lihat Daftar Peserta
+                                    </div>
+                                </a>
+                                @endif
                             @endif
                         @else
                             {{-- ✅ BUTTON UNTUK GUEST: Harus Login --}}
@@ -187,6 +201,7 @@
                                 Daftar Kegiatan
                             </button>
                         @endauth
+
                         {{-- Map Placeholder --}}
                         <div class="mt-4">
                             <div class="flex items-center justify-center h-40 bg-gray-100 rounded-lg border border-gray-200">

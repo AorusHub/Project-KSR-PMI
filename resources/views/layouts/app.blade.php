@@ -15,7 +15,7 @@
         {{-- Gunakan navbar yang sama --}}
         @include('components.navbar')
 
-        <main>
+        <main> 
             @yield('content')
         </main>
 

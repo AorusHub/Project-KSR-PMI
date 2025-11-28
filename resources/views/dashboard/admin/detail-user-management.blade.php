@@ -45,14 +45,14 @@
 
                 {{-- Donasi Terakhir Card --}}
                 @php 
-                    $lastDonation = $pendonor->donasiDarah->sortByDesc('tgl_donasi')->first(); 
+                    $lastDonation = $pendonor->donasiDarah->sortByDesc('tanggal_donasi')->first(); 
                 @endphp
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                     <div class="flex items-start justify-between">
                         <div>
                             <p class="text-sm text-gray-600 mb-2">Donasi Terakhir</p>
                             @if($lastDonation)
-                                <p class="text-2xl font-bold text-gray-900">{{ \Carbon\Carbon::parse($lastDonation->tgl_donasi)->format('d/m/Y') }}</p>
+                                <p class="text-2xl font-bold text-gray-900">{{ \Carbon\Carbon::parse($lastDonation->tanggal_donasi)->format('d/m/Y') }}</p>
                                 <p class="text-xs text-gray-500 mt-2">{{ Str::limit($lastDonation->lokasi_donor, 30) }}</p>
                             @else
                                 <p class="text-2xl font-bold text-gray-900">-</p>
@@ -70,7 +70,7 @@
                 {{-- Donor Berikutnya Card --}}
                 @php
                     $nextDonation = $lastDonation 
-                        ? \Carbon\Carbon::parse($lastDonation->tgl_donasi)->addMonths(3)->format('d/m/Y') 
+                        ? \Carbon\Carbon::parse($lastDonation->tanggal_donasi)->addMonths(3)->format('d/m/Y') 
                         : '-';
                 @endphp
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -139,10 +139,10 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100">
-                                @forelse($pendonor->donasiDarah->sortByDesc('tgl_donasi') as $donasi)
+                                @forelse($pendonor->donasiDarah->sortByDesc('tanggal_donasi') as $donasi)
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-6 py-4 text-sm text-gray-900">
-                                        {{ \Carbon\Carbon::parse($donasi->tgl_donasi)->format('d/m/Y') }}
+                                        {{ \Carbon\Carbon::parse($donasi->tanggal_donasi)->format('d/m/Y') }}
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-900">
                                         {{ $donasi->kegiatan->nama_kegiatan ?? 'Donor Mandiri' }}

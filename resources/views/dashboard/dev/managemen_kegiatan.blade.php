@@ -1,3 +1,4 @@
+{{-- filepath: c:\xampp\htdocs\ksr-pmi\Project-KSR-PMI\resources\views\dashboard\dev\managemen_kegiatan.blade.php --}}
 @extends('layouts.app')
 
 @section('title', 'Manajemen Kegiatan - KSR PMI UNHAS')
@@ -177,7 +178,7 @@
                        class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm">
             </div>
 
-            {{-- Waktu Selesai dan Waktu Mulai --}}
+            {{-- Waktu Mulai dan Waktu Selesai --}}
             <div class="grid grid-cols-2 gap-4 mb-4">
                 <div>
                     <label class="block text-sm font-semibold text-gray-900 mb-2">
@@ -285,7 +286,7 @@
                        class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm">
             </div>
 
-            {{-- Waktu Selesai dan Waktu Mulai --}}
+            {{-- Waktu Mulai dan Waktu Selesai --}}
             <div class="grid grid-cols-2 gap-4 mb-4">
                 <div>
                     <label class="block text-sm font-semibold text-gray-900 mb-2">
@@ -354,19 +355,47 @@
     </div>
 </div>
 
-{{-- Success Modal --}}
+{{-- ✅ LOADING MODAL --}}
+<div id="loadingModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-1/3 mx-auto w-full max-w-sm">
+        <div class="flex flex-col items-center justify-center">
+            {{-- Animated Logo/Spinner --}}
+            <div class="relative mb-8">
+                {{-- Outer rotating ring --}}
+                <div class="w-24 h-24 border-4 border-red-200 border-t-red-600 rounded-full animate-spin"></div>
+                {{-- Inner pulsing circle --}}
+                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                    <div class="w-16 h-16 bg-red-600 rounded-full animate-pulse flex items-center justify-center">
+                        <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            
+            {{-- Loading Text --}}
+            <div class="text-center">
+                <h3 class="text-xl font-bold text-white mb-2" id="loadingText">Menyimpan Data...</h3>
+                <p class="text-sm text-gray-300">Mohon tunggu sebentar</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- ✅ SUCCESS MODAL --}}
 <div id="successModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
     <div class="relative top-1/4 mx-auto p-8 border w-full max-w-sm shadow-lg rounded-2xl bg-white">
         <div class="text-center">
-            {{-- Success Icon --}}
-            <div class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-white border-4 border-green-500 mb-6">
+            {{-- Success Icon with Animation --}}
+            <div class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-white border-4 border-green-500 mb-6 animate-bounce">
                 <svg class="h-12 w-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
                 </svg>
             </div>
             
             {{-- Success Message --}}
-            <h3 class="text-xl font-bold text-gray-900" id="successMessage">Membuat Kegiatan Berhasil</h3>
+            <h3 class="text-xl font-bold text-gray-900 mb-2" id="successMessage">Kegiatan Berhasil Dibuat!</h3>
+            <p class="text-sm text-gray-600">Halaman akan dimuat ulang...</p>
         </div>
     </div>
 </div>
@@ -424,7 +453,7 @@
 
         // Set form action URL
         const form = document.getElementById('formEditKegiatan');
-        form.dataset.kegiatanId = id;
+        form.action = `/managemen-kegiatan/${id}`;
 
         document.getElementById('modalEditKegiatan').classList.remove('hidden');
         document.body.style.overflow = 'hidden';
@@ -437,20 +466,18 @@
     }
 
     // Success modal functions
-    function showSuccessModal(message = 'Membuat Kegiatan Berhasil') {
+    function showSuccessModal(message = 'Kegiatan Berhasil Dibuat!') {
         document.getElementById('successMessage').textContent = message;
         document.getElementById('successModal').classList.remove('hidden');
         
-        // Auto close after 10 seconds
+        // Auto reload after 2 seconds
         setTimeout(function() {
-            closeSuccessModal();
-        }, 10000);
+            window.location.reload();
+        }, 2000);
     }
 
     function closeSuccessModal() {
         document.getElementById('successModal').classList.add('hidden');
-        // Reload page to show new data
-        window.location.reload();
     }
 
     // Close modals when clicking outside
@@ -475,87 +502,65 @@
     // Close modal with ESC key
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
+            const loadingModal = document.getElementById('loadingModal');
+            const successModal = document.getElementById('successModal');
+            
+            // Jangan tutup modal jika sedang loading atau success
+            if (!loadingModal.classList.contains('hidden') || !successModal.classList.contains('hidden')) {
+                return;
+            }
+            
             closeModal();
             closeEditModal();
-            closeSuccessModal();
         }
     });
 
-    // Handle form Create submission
+    // ✅ HANDLE FORM CREATE SUBMISSION WITH LOADING
     document.getElementById('formKegiatan').addEventListener('submit', function(e) {
         e.preventDefault();
         
-        const formData = new FormData(this);
+        // 1. Tutup modal form
+        document.getElementById('modalKegiatan').classList.add('hidden');
         
-        fetch(this.action, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                closeModal();
-                showSuccessModal('Membuat Kegiatan Berhasil');
-            } else {
-                alert(data.message || 'Terjadi kesalahan');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Terjadi kesalahan saat menyimpan data');
-        });
+        // 2. Tampilkan loading modal
+        document.getElementById('loadingText').textContent = 'Menyimpan Data...';
+        document.getElementById('loadingModal').classList.remove('hidden');
+        
+        // 3. Submit form
+        this.submit();
     });
 
-    // Handle form Edit submission
+    // ✅ HANDLE FORM EDIT SUBMISSION WITH LOADING
     document.getElementById('formEditKegiatan').addEventListener('submit', function(e) {
         e.preventDefault();
         
-        const form = this;
-        const kegiatanId = form.dataset.kegiatanId;
-        const formData = new FormData(form);
+        // 1. Tutup modal form
+        document.getElementById('modalEditKegiatan').classList.add('hidden');
         
-        // Add _method for PUT request
-        formData.append('_method', 'PUT');
+        // 2. Tampilkan loading modal
+        document.getElementById('loadingText').textContent = 'Mengupdate Data...';
+        document.getElementById('loadingModal').classList.remove('hidden');
         
-        fetch(`/managemen-kegiatan/${kegiatanId}`, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                closeEditModal();
-                showSuccessModal('Update Kegiatan Berhasil')
-
-                setTimeout(function() {
-                    closeSuccessModal();
-                }, 10000);
-            } else {
-                alert(data.message || 'Terjadi kesalahan');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Terjadi kesalahan saat mengupdate data: ' + error.message);
-        });
+        // 3. Submit form
+        this.submit();
     });
 
-    // Check for success message from server
+    // ✅ CHECK FOR SUCCESS MESSAGE FROM SERVER
     @if(session('success'))
+        // Hide loading modal
+        document.getElementById('loadingModal').classList.add('hidden');
+        
+        // Show success modal
         showSuccessModal('{{ session('success') }}');
+    @endif
+
+    // ✅ CHECK FOR ERROR MESSAGE FROM SERVER
+    @if(session('error') || $errors->any())
+        // Hide loading modal if any
+        document.getElementById('loadingModal').classList.add('hidden');
+        
+        // Show error alert
+        alert('Terjadi kesalahan: {{ session("error") ?? $errors->first() }}');
     @endif
 </script>
 @endpush

@@ -84,6 +84,13 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     });
 
     Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
+    // ✅ Kegiatan & Partisipan Routes
+    Route::get('/kegiatan/{id}', [KegiatanDonorController::class, 'adminShow'])->name('kegiatan.show');
+    Route::get('/kegiatan/{id}/partisipan', [KegiatanDonorController::class, 'showPartisipan'])->name('kegiatan.partisipan');
+    Route::get('/kegiatan/{id}/partisipan/search', [KegiatanDonorController::class, 'showPartisipan'])->name('kegiatan.partisipan.search');
+    
+     // ✅ Pendonor Routes
+    Route::get('/pendonor/{id}', [PendonorController::class, 'show'])->name('pendonor.show');
 });
 
 /*
@@ -147,8 +154,21 @@ Route::middleware(['auth'])->group(function () {
         ->name('managemen.kegiatan.update');
     
     Route::delete('/managemen-kegiatan/{id}', [KegiatanDonorController::class, 'destroy'])
-        ->name('managemen.kegiatan.destroy');                     
-});
+        ->name('managemen.kegiatan.destroy'); 
+    
+    Route::get('/kegiatan-donor/{id}/peserta', [KegiatanDonorController::class, 'peserta'])
+        ->name('kegiatan.peserta');
+    Route::get('/kegiatan-donor/{id}/peserta/search', [KegiatanDonorController::class, 'searchPeserta'])
+        ->name('kegiatan.peserta.search');
+    //detail kegiatan
+    
+    // ✅ ROUTES UNTUK MELIHAT PESERTA KEGIATAN (Admin & Staf only)
+    // Route::middleware('role:admin,staf')->group(function () {
+    // Route::get('/kegiatan-donor/{id}/peserta', [KegiatanDonorController::class, 'showPeserta'])->name('kegiatan.peserta');
+        
+    // Route::get('/kegiatan-donor/{id}/peserta/search', [KegiatanDonorController::class, 'searchPeserta'])->name('kegiatan.peserta.search');
+    // });
+ });
 
 /*  
 |--------------------------------------------------------------------------

@@ -13,7 +13,8 @@ class KegiatanDonorController extends Controller
     // Authenticated: Daftar kegiatan donor (untuk user yang login)
     public function index()
     {
-        $kegiatan = KegiatanDonor::where('status', 'Planned')
+        $kegiatan = KegiatanDonor::with('donasiDarah')
+            ->where('status', 'Planned')
             ->where('tanggal', '>=', now())
             ->orderBy('tanggal', 'asc')
             ->paginate(12);
@@ -24,11 +25,13 @@ class KegiatanDonorController extends Controller
     // Public: Detail kegiatan
     public function show($id)
     {
-        $kegiatan = KegiatanDonor::with(['donasiDarah.pendonor'])
+        $kegiatan = KegiatanDonor::with(['donasiDarah' => function($query) {
+                $query->whereHas('pendonor.user');
+            }, 'donasiDarah.pendonor.user'])
             ->findOrFail($id);
-
+        
         $totalDonor = $kegiatan->donasiDarah->count();
-
+        
         return view('kegiatan.detail_kegiatan', compact('kegiatan', 'totalDonor'));
     }
 
@@ -69,7 +72,8 @@ class KegiatanDonorController extends Controller
         DonasiDarah::create([
             'pendonor_id' => $user->pendonor->pendonor_id,
             'kegiatan_id' => $kegiatan->kegiatan_id,
-            'tgl_donasi' => $kegiatan->tanggal,
+            'tanggal_donasi' => $kegiatan->tanggal,
+            'jenis_donor' => 'Sukarela',
             'lokasi_donor' => $kegiatan->lokasi,
             'status_donasi' => 'Terdaftar',
         ]);
@@ -235,5 +239,48 @@ class KegiatanDonorController extends Controller
 
         return redirect()->back()
             ->with('success', 'Status kegiatan berhasil diupdate!');
+    }
+
+    public function peserta($id)
+    {
+        // Cek role
+        if (!in_array(Auth::user()->role, ['admin', 'staf'])) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $kegiatan = KegiatanDonor::findOrFail($id);
+        
+        // ✅ LOAD partisipan dengan whereHas untuk filter yang punya pendonor & user
+        $partisipans = DonasiDarah::where('kegiatan_id', $id)
+            ->whereHas('pendonor.user') // ✅ FILTER hanya yang punya pendonor & user
+            ->with('pendonor.user')
+            ->paginate(10);
+
+        return view('dashboard.dev.partisipan-kegiatan', compact('kegiatan', 'partisipans'));
+    }
+
+    // ✅ PERBAIKI METHOD SEARCH PESERTA
+    public function searchPeserta(Request $request, $id)
+    {
+        // Cek role
+        if (!in_array(Auth::user()->role, ['admin', 'staf'])) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $kegiatan = KegiatanDonor::findOrFail($id);
+        $search = $request->input('search');
+
+        // Search partisipan
+        $partisipans = DonasiDarah::where('kegiatan_id', $id)
+            ->whereHas('pendonor.user') // ✅ FILTER hanya yang punya pendonor & user
+            ->with('pendonor.user')
+            ->when($search, function($query) use ($search) {
+                $query->whereHas('pendonor.user', function($q) use ($search) {
+                    $q->where('nama', 'LIKE', "%{$search}%");
+                });
+            })
+            ->paginate(10);
+
+        return view('dashboard.dev.partisipan-kegiatan', compact('kegiatan', 'partisipans', 'search'));
     }
 }
