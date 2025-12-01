@@ -5,7 +5,7 @@
 
 @section('content')
     {{-- Hero Section --}}
-    <section class="bg-gradient-to-br from-red-600 via-red-700 to-red-800 text-white py-20 relative overflow-hidden">
+     <section class="bg-gradient-to-br from-red-600 via-red-700 to-red-800 text-white py-20 relative overflow-hidden">
         {{-- Background Pattern --}}
         <div class="absolute inset-0 opacity-10">
             <div class="absolute top-0 left-0 w-64 h-64 bg-white rounded-full -translate-x-1/2 -translate-y-1/2"></div>
@@ -18,30 +18,31 @@
                     Setetes Darah Anda,<br>
                     Nyawa Bagi Sesama
                 </h1>
-                <p class="text-base md:text-lg text-red-50">
+                <p class="text-lg md:text-xl text-red-50">
                     Bergabunglah dengan ribuan pendonor sukarela KSR PMI UNHAS<br>
-                    Makan gratis dan selamatkan nyawa hari ini
+                    Makassar dan selamatkan nyawa hari ini.
                 </p>
-                <div class="flex flex-wrap gap-3 pt-4">
-                    <a href="{{ route('kegiatan.index') }}" class="px-6 py-2.5 bg-white text-red-600 text-sm font-semibold rounded-md hover:bg-gray-100 transition-all shadow-lg">
+                <div class="flex flex-wrap gap-4 pt-4">
+                    <a href="{{ route('kegiatan.index') }}" class="px-6 py-3 bg-white text-red-600 font-semibold rounded-lg hover:bg-gray-100 transition-all shadow-lg">
                         Cari Kegiatan Donor
+                    </a>
                     @auth
                         @if(Auth::user()->role === 'pendonor')
-                            <a href="{{ route('pendonor.permintaan-darah.create') }}" class="px-6 py-2.5 bg-transparent border-2 border-white text-white text-sm font-semibold rounded-md hover:bg-white hover:text-red-600 transition-all">
+                            <a href="{{ route('pendonor.permintaan-darah.create') }}" class="px-6 py-3 bg-transparent border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-red-600 transition-all">
                                 Butuh Darah Cepat?
                             </a>
                         @else
-                            <a href="{{ route('login') }}" class="px-6 py-2.5 bg-transparent border-2 border-white text-white text-sm font-semibold rounded-md hover:bg-white hover:text-red-600 transition-all">
+                            <a href="{{ route('login') }}" class="px-6 py-3 bg-transparent border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-red-600 transition-all">
                                 Butuh Darah Cepat?
                             </a>
                         @endif
                     @else
-                        <a href="{{ route('login') }}" class="px-6 py-2.5 bg-transparent border-2 border-white text-white text-sm font-semibold rounded-md hover:bg-white hover:text-red-600 transition-all">
+                        <a href="{{ route('login') }}" class="px-6 py-3 bg-transparent border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-red-600 transition-all">
                             Butuh Darah Cepat?
                         </a>
                     @endauth
                     
-                    <a href="#kegiatan" class="px-6 py-2.5 bg-white text-red-600 text-sm font-semibold rounded-md hover:bg-gray-100 transition-all shadow-lg">
+                    <a href="#kegiatan" class="px-6 py-3 bg-white text-red-600 font-semibold rounded-lg hover:bg-gray-100 transition-all shadow-lg">
                         Lihat Donor Darurat
                     </a>
                 </div>
@@ -122,51 +123,51 @@
                             <span>{{ $kegiatan->lokasi }}</span>
                         </p>
                     </div>
-                    <a href="{{ route('login') }}" class="block w-full text-center bg-red-600 text-white text-sm font-semibold py-2.5 rounded-lg hover:bg-red-700 transition-colors">
+                    <a href="{{ route('kegiatan.show', $kegiatan->kegiatan_id) }}" class="block w-full text-center bg-red-600 text-white text-sm font-semibold py-2.5 rounded-lg hover:bg-red-700 transition-colors">
                         Lihat Detail
                     </a>
                 </div>
             </div>
             @empty
-            {{-- Default cards --}}
-            @for($i = 1; $i <= 3; $i++)
-            <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all">
-                <div class="relative h-48">
-                    <img src="{{ asset('images/donor-' . $i . '.jpg') }}" alt="Donor Darah" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/400x300/dc2626/ffffff?text=Donor+Darah'">
-                </div>
-                <div class="p-5">
-                    <h3 class="font-bold text-base text-gray-800 mb-3">
-                        @if($i == 1) Donor Darah Kampus UNHAS
-                        @elseif($i == 2) Donor Darah Menjaga Raya Makassar
-                        @else Donor Darah Mall Panakkukang
-                        @endif
-                    </h3>
-                    <div class="space-y-2 text-xs text-gray-600 mb-4">
-                        <p class="flex items-start">
-                            <svg class="w-4 h-4 mr-2 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                            </svg>
-                            <span>
-                                @if($i == 1) 15 November 2024 / 08:00 - 16:00 WITA
-                                @elseif($i == 2) 20 November 2024 / 09:00 - 15:00 WITA
-                                @else 25 November 2024 / 10:00 - 14:00 WITA
-                                @endif
-                            </span>
-                        </p>
-                        <p class="flex items-start">
-                            <svg class="w-4 h-4 mr-2 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                            </svg>
-                            <span>
-                                @if($i == 1) Gedung Andi Pangerang UNHAS, Tamalanrea
-                                @elseif($i == 2) Jl. Abdullah Daeng Sirua, A. Posi Makassar
+{{-- Default cards --}}
+@for($i = 1; $i <= 3; $i++)
+<div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all">
+    <div class="relative h-48">
+        <img src="{{ asset('images/donor-' . $i . '.jpg') }}" alt="Donor Darah" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/400x300/dc2626/ffffff?text=Donor+Darah'">
+    </div>
+    <div class="p-5">
+        <h3 class="font-bold text-base text-gray-800 mb-3">
+            @if($i == 1) Donor Darah Kampus UNHAS
+            @elseif($i == 2) Donor Darah Menjaga Raya Makassar
+            @else Donor Darah Mall Panakkukang
+            @endif
+        </h3>
+        <div class="space-y-2 text-xs text-gray-600 mb-4">
+            <p class="flex items-start">
+                <svg class="w-4 h-4 mr-2 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                <span>
+                    @if($i == 1) 15 November 2024 / 08:00 - 16:00 WITA
+                    @elseif($i == 2) 20 November 2024 / 09:00 - 15:00 WITA
+                    @else 25 November 2024 / 10:00 - 14:00 WITA
+                    @endif
+                </span>
+            </p>
+            <p class="flex items-start">
+                <svg class="w-4 h-4 mr-2 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                <span>
+                    @if($i == 1) Gedung Andi Pangerang UNHAS, Tamalanrea
+                    @elseif($i == 2) Jl. Abdullah Daeng Sirua, A. Posi Makassar
                                 @else Mall Panakkukang, Jl. Boulevard, Makassar
                                 @endif
                             </span>
                         </p>
                     </div>
-                    <a href="{{ route('login') }}" class="block w-full text-center bg-red-600 text-white text-sm font-semibold py-2.5 rounded-lg hover:bg-red-700 transition-colors">
+                    <a href="{{ route('kegiatan.index') }}" class="block w-full text-center bg-red-600 text-white text-sm font-semibold py-2.5 rounded-lg hover:bg-red-700 transition-colors">
                         Lihat Detail
                     </a>
                 </div>
@@ -176,7 +177,7 @@
         </div>
 
         <div class="text-center mt-10">
-            <a href="{{ url('/kegiatan') }}" class="inline-block px-6 py-2.5 border-2 border-red-600 text-red-600 text-sm font-semibold rounded-lg hover:bg-red-600 hover:text-white transition-all">
+            <a href="{{ route('kegiatan.index') }}" class="inline-block px-6 py-2.5 border-2 border-red-600 text-red-600 text-sm font-semibold rounded-lg hover:bg-red-600 hover:text-white transition-all">
                 Lihat Semua Kegiatan
             </a>
         </div>
@@ -278,28 +279,20 @@
             <div class="absolute bottom-0 left-0 w-64 h-64 bg-white rounded-full -translate-x-1/2 translate-y-1/2"></div>
         </div>
         
-        <section class="py-16 bg-gradient-to-br from-red-600 via-red-700 to-red-800 text-white relative overflow-hidden">
-            {{-- Background Pattern --}}
-            <div class="absolute inset-0 opacity-10">
-                <div class="absolute top-0 right-0 w-96 h-96 bg-white rounded-full translate-x-1/2 -translate-y-1/2"></div>
-                <div class="absolute bottom-0 left-0 w-64 h-64 bg-white rounded-full -translate-x-1/2 translate-y-1/2"></div>
-            </div>
-            
-            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-                <h2 class="text-xl md:text-2xl font-bold mb-3">Siap Menjadi Pahlawan?</h2>
-                <p class="text-base text-red-50 mb-6">
-                    Donor darah Anda dapat menyelamatkan hingga 3 nyawa
-                </p>
-                <div class="flex flex-wrap justify-center gap-3">
-                    <a href="{{ route('register') }}" class="px-6 py-2.5 bg-white text-red-600 text-sm font-semibold rounded-lg hover:bg-gray-100 transition-all shadow-lg">
-                        Daftar Sebagai Pendonor
-                    </a>
-                   <a href="{{ route('login') }}" class="px-6 py-2.5 bg-transparent border-2 border-white text-white text-sm font-semibold rounded-lg hover:bg-white hover:text-red-600 transition-all">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+            <h2 class="text-xl md:text-2xl font-bold mb-3">Siap Menjadi Pahlawan?</h2>
+            <p class="text-base text-red-50 mb-6">
+                Donor darah Anda dapat menyelamatkan hingga 3 nyawa
+            </p>
+            <div class="flex flex-wrap justify-center gap-3">
+                <a href="{{ route('register') }}" class="px-6 py-2.5 bg-white text-red-600 text-sm font-semibold rounded-lg hover:bg-gray-100 transition-all shadow-lg">
+                    Daftar Sebagai Pendonor
+                </a>
+                <a href="{{ route('login') }}" class="px-6 py-2.5 bg-transparent border-2 border-white text-white text-sm font-semibold rounded-lg hover:bg-white hover:text-red-600 transition-all">
                     Butuh Darah Cepat?
-                    </a>
-                </div>
+                </a>
             </div>
-        </section>
+        </div>
     </section>
     @endguest
 @endsection

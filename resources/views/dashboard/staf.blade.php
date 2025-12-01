@@ -101,14 +101,14 @@
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                     <div class="flex items-center justify-between">
                         <h4 class="text-lg font-bold text-gray-900">Permintaan Donor Darah</h4>
-                        <a href="#" class="text-sm text-gray-600 hover:text-gray-900 font-medium">Lihat</a>
+                        <a href="{{ route('managemen.permintaan-darurat.index') }}" class="text-sm text-gray-600 hover:text-gray-900 font-medium">Lihat</a>
                     </div>
                 </div>
 
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                     <div class="flex items-center justify-between">
                         <h4 class="text-lg font-bold text-red-600">Permintaan Darah Darurat</h4>
-                        <a href="#" class="text-sm text-gray-600 hover:text-gray-900 font-medium">Lihat</a>
+                        <a href="{{ route('managemen.permintaan-darurat.index') }}" class="text-sm text-gray-600 hover:text-gray-900 font-medium">Lihat</a>
                     </div>
                 </div>
             </div>

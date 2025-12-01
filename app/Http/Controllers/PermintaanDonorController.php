@@ -1,4 +1,5 @@
 <?php
+// filepath: c:\xampp\htdocs\ksr-pmi\Project-KSR-PMI\app\Http\Controllers\PermintaanDonorController.php
 
 namespace App\Http\Controllers;
 
@@ -6,11 +7,12 @@ use Illuminate\Http\Request;
 use App\Models\PermintaanDonor;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class PermintaanDonorController extends Controller
 {
     /**
-     * Tampilkan formulir permintaan darah
+     * Tampilkan formulir permintaan darah (untuk pendonor)
      */
     public function create()
     {
@@ -18,85 +20,205 @@ class PermintaanDonorController extends Controller
     }
 
     /**
-     * Simpan data permintaan darah
+     * Simpan data permintaan darah (dari pendonor)
      */
     public function store(Request $request)
     {
         // Validasi input
         $validated = $request->validate([
             'nama_pasien' => 'required|string|max:255',
-            'golongan_darah' => 'required|string|in:A+,A-,B+,B-,AB+,AB-,O+,O-',
-            'riwayat_penyakit' => 'nullable|string|max:1000',
-            'tempat_dirawat' => 'required|string|max:255',
-            'jenis_permintaan' => 'required|string|in:darah_lengkap,prc,trombosit,plasma',
+            'gol_darah' => 'required|string|in:A+,A-,B+,B-,AB+,AB-,O+,O-',
+            'riwayat' => 'nullable|string|max:1000',
+            'tempat_rawat' => 'required|string|max:255',
+            'jenis_permintaan' => 'required|string',
             'jumlah_kantong' => 'required|integer|min:1|max:10',
-            'tingkat_urgensi' => 'required|string|in:normal,mendesak,darurat',
+            'tingkat_urgensi' => 'required|string',
             'nama_kontak' => 'required|string|max:255',
-            'nomor_hp' => 'required|string|regex:/^[0-9]{10,15}$/',
-            'hubungan_pasien' => 'required|string|max:100',
-        ], [
-            // Pesan error kustom
-            'nama_pasien.required' => 'Nama pasien wajib diisi',
-            'golongan_darah.required' => 'Golongan darah wajib dipilih',
-            'golongan_darah.in' => 'Golongan darah tidak valid',
-            'tempat_dirawat.required' => 'Tempat dirawat wajib diisi',
-            'jenis_permintaan.required' => 'Jenis permintaan wajib dipilih',
-            'jumlah_kantong.required' => 'Jumlah kantong wajib diisi',
-            'jumlah_kantong.min' => 'Jumlah kantong minimal 1',
-            'jumlah_kantong.max' => 'Jumlah kantong maksimal 10',
-            'nama_kontak.required' => 'Nama kontak wajib diisi',
-            'nomor_hp.required' => 'Nomor HP wajib diisi',
-            'nomor_hp.regex' => 'Format nomor HP tidak valid (10-15 digit)',
-            'hubungan_pasien.required' => 'Hubungan dengan pasien wajib diisi',
+            'no_hp' => 'required|string|min:10|max:15',
+            'hubungan' => 'required|string|max:100',
+            'tanggal_hari' => 'required|date',
         ]);
 
         try {
-            // ✅ PERBAIKAN: Generate nomor pelacakan yang lebih unik
+            // Generate nomor pelacakan yang unik
             do {
-                $nomorPelacakan = 'REQ' . now()->format('ymd') . strtoupper(Str::random(6));
+                $nomorPelacakan = 'REQ' . now()->format('ymd') . strtoupper(Str::random(5));
             } while (PermintaanDonor::where('nomor_pelacakan', $nomorPelacakan)->exists());
 
-            // Simpan data ke database
+            // Simpan data ke database dengan nomor_pelacakan
             $permintaan = PermintaanDonor::create([
-                'user_id' => auth()->id(),
                 'nomor_pelacakan' => $nomorPelacakan,
-                'tanggal_hari' => Carbon::now()->format('Y-m-d'),
+                'tanggal_hari' => $validated['tanggal_hari'],
                 'nama_pasien' => $validated['nama_pasien'],
-                'gol_darah' => $validated['golongan_darah'],
-                'riwayat_penyakit' => $validated['riwayat_penyakit'],
-                'tempat_dirawat' => $validated['tempat_dirawat'],
-                'jenis_permintaan' => $validated['jenis_permintaan'],
+                'gol_darah' => $validated['gol_darah'],
                 'jumlah_kantong' => $validated['jumlah_kantong'],
+                'riwayat' => $validated['riwayat'],
+                'tempat_rawat' => $validated['tempat_rawat'],
+                'jenis_permintaan' => $validated['jenis_permintaan'],
                 'tingkat_urgensi' => $validated['tingkat_urgensi'],
                 'nama_kontak' => $validated['nama_kontak'],
-                'nomor_hp' => $validated['nomor_hp'],
-                'hubungan_pasien' => $validated['hubungan_pasien'],
+                'no_hp' => $validated['no_hp'],
+                'hubungan' => $validated['hubungan'],
+                'kontak_keluarga' => $validated['no_hp'],
                 'status_permintaan' => 'Pending',
             ]);
 
-            // Redirect ke halaman sukses
-            return redirect()->route('pendonor.permintaan-darah.sukses', $permintaan->permintaan_id)
-                ->with('success', 'Permintaan donor darah berhasil dikirim!');
+            // Return JSON response untuk AJAX
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Permintaan donor darah berhasil dikirim!',
+                    'nomor_pelacakan' => $nomorPelacakan,
+                    'permintaan_id' => $permintaan->permintaan_id
+                ]);
+            }
+
+            return redirect()->route('pendonor.dashboard')
+                ->with('success', 'Permintaan donor darah berhasil dikirim!')
+                ->with('nomor_pelacakan', $nomorPelacakan);
 
         } catch (\Exception $e) {
-            // ✅ PERBAIKAN: Log error untuk debugging
-            \Log::error('Error menyimpan permintaan donor: ' . $e->getMessage());
-    
-            // Handle error
-            return back()->withInput()->withErrors(['error' => 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi.']);
+            \Log::error('Error menyimpan permintaan donor:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                ], 500);
+            }
+
+            return back()->withInput()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
         }
     }
 
     /**
-     * Tampilkan halaman sukses
+     * ✅ BARU: Tampilkan daftar permintaan donor (untuk admin & staff)
      */
-    public function success($id)
+    public function managemenIndex(Request $request)
     {
-        // Ambil data permintaan berdasarkan ID dan user yang login
-        $permintaan = PermintaanDonor::where('permintaan_id', $id)
-            ->where('user_id', auth()->id())
-            ->firstOrFail();
+        // ✅ Authorization: Hanya admin dan staff yang bisa akses
+        if (!in_array(Auth::user()->role, ['admin', 'staf'])) {
+            abort(403, 'Unauthorized action.');
+        }
 
-        return view('dashboard.pendonor.permintaan-sukses', compact('permintaan'));
+        $query = PermintaanDonor::query();
+
+        // Filter berdasarkan status
+        if ($request->filled('status') && $request->status !== 'Semua Status') {
+            $query->where('status_permintaan', $request->status);
+        }
+
+        // Search berdasarkan nama pasien atau golongan darah
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nama_pasien', 'like', "%{$search}%")
+                  ->orWhere('gol_darah', 'like', "%{$search}%")
+                  ->orWhere('nomor_pelacakan', 'like', "%{$search}%");
+            });
+        }
+
+        // Hitung statistik
+        $totalPermintaan = PermintaanDonor::count();
+        $belumTerpenuhi = PermintaanDonor::where('status_permintaan', 'Pending')->count();
+        $diproses = PermintaanDonor::where('status_permintaan', 'Approved')->count();
+        $terpenuhi = PermintaanDonor::where('status_permintaan', 'Completed')->count();
+
+        // Get paginated data
+        $permintaan = $query->orderBy('created_at', 'desc')->paginate(10);
+
+        return view('dashboard.dev.managemen-permintaan-darurat', compact(
+            'permintaan',
+            'totalPermintaan',
+            'belumTerpenuhi',
+            'diproses',
+            'terpenuhi'
+        ));
+    }
+
+    /**
+     * ✅ BARU: Tampilkan detail permintaan (untuk admin & staff)
+     */
+    public function managemenShow($id)
+    {
+        // ✅ Authorization: Hanya admin dan staff yang bisa akses
+        if (!in_array(Auth::user()->role, ['admin', 'staf'])) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $permintaan = PermintaanDonor::findOrFail($id);
+        return view('dashboard.dev.detail-permintaan-darurat', compact('permintaan'));
+    }
+
+    /**
+     * ✅ BARU: Update status permintaan (untuk admin & staff)
+     */
+    public function updateStatus(Request $request, $id)
+    {
+        // ✅ Authorization: Hanya admin dan staff yang bisa akses
+        if (!in_array(Auth::user()->role, ['admin', 'staf'])) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized action.'
+                ], 403);
+            }
+            abort(403, 'Unauthorized action.');
+        }
+
+        $validated = $request->validate([
+            'status_permintaan' => 'required|in:Pending,Approved,Completed,Rejected'
+        ]);
+
+        try {
+            $permintaan = PermintaanDonor::findOrFail($id);
+            $permintaan->update([
+                'status_permintaan' => $validated['status_permintaan']
+            ]);
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Status berhasil diupdate!'
+                ]);
+            }
+
+            return back()->with('success', 'Status permintaan berhasil diupdate!');
+
+        } catch (\Exception $e) {
+            \Log::error('Error update status permintaan:', [
+                'message' => $e->getMessage()
+            ]);
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan saat mengupdate status.'
+                ], 500);
+            }
+
+            return back()->withErrors(['error' => 'Terjadi kesalahan saat mengupdate status.']);
+        }
+    }
+
+    /**
+     * LAMA: Tampilkan daftar permintaan donor (generic)
+     */
+    public function index()
+    {
+        $permintaan = PermintaanDonor::orderBy('created_at', 'desc')->paginate(10);
+        return view('dashboard.permintaan-donor.index', compact('permintaan'));
+    }
+
+    /**
+     * LAMA: Tampilkan detail permintaan (generic)
+     */
+    public function show($id)
+    {
+        $permintaan = PermintaanDonor::findOrFail($id);
+        return view('dashboard.permintaan-donor.detail', compact('permintaan'));
     }
 }

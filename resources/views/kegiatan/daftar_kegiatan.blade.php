@@ -12,24 +12,26 @@
         </div>
 
         {{-- Search & Filter Bar --}}
-        <div class="mb-10 flex flex-col md:flex-row gap-4">
-            <div class="flex-1 relative">
-                <input type="text" 
-                       id="searchKegiatan"
-                       placeholder="Cari kegiatan atau lokasi..." 
-                       class="w-full px-5 py-3.5 pl-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent shadow-sm">
-                <svg class="w-5 h-5 text-gray-400 absolute left-4 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                </svg>
-            </div>
-            <select id="filterLokasi" class="px-5 py-3.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent shadow-sm bg-white">
-                <option value="">Semua Lokasi</option>
-                <option value="Makassar">Makassar</option>
-                <option value="Jakarta">Jakarta</option>
-                <option value="Surabaya">Surabaya</option>
-                <option value="Bandung">Bandung</option>
+    <div class="mb-10 flex flex-col md:flex-row gap-4">
+        <div class="flex-1 md:flex-[2] relative">
+            <svg class="w-5 h-5 text-gray-400 absolute left-4 top-1/2 transform -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+            <input type="text" 
+                id="searchKegiatan"
+                placeholder="Cari kegiatan atau lokasi..." 
+                class="w-full px-5 py-3.5 pl-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent shadow-sm">
+        </div>
+        <div class="flex-1 md:flex-[2]">
+           <select id="filterLokasi" class="w-full px-5 py-3.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent shadow-sm bg-white text-gray-500">
+            <option value="" class="text-gray-500">Semua Lokasi</option>
+            <option value="Makassar" class="text-gray-900">Makassar</option>
+            <option value="Jakarta" class="text-gray-900">Jakarta</option>
+            <option value="Surabaya" class="text-gray-900">Surabaya</option>
+            <option value="Bandung" class="text-gray-900">Bandung</option>
             </select>
         </div>
+    </div>
 
         {{-- Cards Grid --}}
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="kegiatanGrid">
@@ -103,11 +105,54 @@
         </div>
 
         {{-- Pagination --}}
-        @if($kegiatan->hasPages())
-        <div class="mt-12">
-            {{ $kegiatan->links() }}
-        </div>
+@if($kegiatan->hasPages())
+<div class="mt-12 flex justify-center">
+    <nav class="flex items-center gap-2">
+        {{-- Previous Button --}}
+        @if ($kegiatan->onFirstPage())
+            <span class="px-4 py-2 text-gray-400 bg-gray-100 rounded-lg cursor-not-allowed">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+            </span>
+        @else
+            <a href="{{ $kegiatan->previousPageUrl() }}" class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+            </a>
         @endif
+
+        {{-- Page Numbers --}}
+        @foreach ($kegiatan->getUrlRange(1, $kegiatan->lastPage()) as $page => $url)
+            @if ($page == $kegiatan->currentPage())
+                <span class="px-4 py-2 text-white bg-red-600 rounded-lg font-semibold shadow-md">
+                    {{ $page }}
+                </span>
+            @else
+                <a href="{{ $url }}" class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                    {{ $page }}
+                </a>
+            @endif
+        @endforeach
+
+        {{-- Next Button --}}
+        @if ($kegiatan->hasMorePages())
+            <a href="{{ $kegiatan->nextPageUrl() }}" class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+            </a>
+        @else
+            <span class="px-4 py-2 text-gray-400 bg-gray-100 rounded-lg cursor-not-allowed">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+            </span>
+        @endif
+    </nav>
+</div>
+@endif
     </div>
 </div>
 

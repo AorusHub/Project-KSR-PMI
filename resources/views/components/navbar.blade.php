@@ -190,6 +190,7 @@
                                 </div>
                             </a>
 
+                            @if($user->isPendonor())
                             <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                                 <div class="flex items-center space-x-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -198,8 +199,7 @@
                                     <span>Profil Saya</span>
                                 </div>
                             </a>
-
-                            @if($user->isPendonor())
+                            
                             <a href="{{ route('pendonor.riwayat-donor') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                                 <div class="flex items-center space-x-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -208,9 +208,9 @@
                                     <span>Riwayat Donasi</span>
                                 </div>
                             </a>
-                            @endif
 
                             <div class="border-t border-gray-200 my-2"></div>
+                            @endif
 
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf

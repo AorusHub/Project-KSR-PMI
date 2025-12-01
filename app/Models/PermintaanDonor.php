@@ -14,10 +14,18 @@ class PermintaanDonor extends Model
     protected $primaryKey = 'permintaan_id';
 
     protected $fillable = [
+        'nomor_pelacakan', // ✅ Tambahkan ini
         'tanggal_hari',
         'nama_pasien',
         'gol_darah',
         'jumlah_kantong',
+        'riwayat',
+        'tempat_rawat',
+        'jenis_permintaan',
+        'tingkat_urgensi',
+        'nama_kontak',
+        'no_hp',
+        'hubungan',
         'kontak_keluarga',
         'status_permintaan',
     ];

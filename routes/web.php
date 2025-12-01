@@ -160,6 +160,12 @@ Route::middleware(['auth'])->group(function () {
         ->name('kegiatan.peserta');
     Route::get('/kegiatan-donor/{id}/peserta/search', [KegiatanDonorController::class, 'searchPeserta'])
         ->name('kegiatan.peserta.search');
+    
+    Route::prefix('managemen-permintaan-darurat')->name('managemen.permintaan-darurat.')->group(function () {
+        Route::get('/', [PermintaanDonorController::class, 'managemenIndex'])->name('index');
+        Route::get('/{id}', [PermintaanDonorController::class, 'managemenShow'])->name('show');
+        Route::post('/{id}/update-status', [PermintaanDonorController::class, 'updateStatus'])->name('update-status');
+    });
     //detail kegiatan
     
     // ✅ ROUTES UNTUK MELIHAT PESERTA KEGIATAN (Admin & Staf only)
