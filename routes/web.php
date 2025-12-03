@@ -14,6 +14,9 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\PermintaanDonorController;
 use App\Http\Controllers\Admin\LaporanController;
+use App\Http\Controllers\PendonorController;
+use App\Http\Controllers\StokDarahController;
+// ...existing code...
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES
@@ -115,7 +118,7 @@ Route::middleware(['auth', 'role:pendonor'])->prefix('pendonor')->name('pendonor
     // Cek Kelayakan
     Route::get('/cek-kelayakan', [DashboardController::class, 'cekKelayakan'])->name('cek-kelayakan');
     Route::get('/cek-kelayakan-donor', [DashboardController::class, 'cekKelayakanDonor'])->name('cek-kelayakan-donor'); // ✅ TAMBAHKAN INI
-    Route::get('/riwayat-donor/export-pdf', [DashboardController::class, 'exportPdf'])->name('riwayat-donor.export-pdf');
+    Route::get('/riwayat-donor/export-pdf', [PendonorController::class, 'exportPdf'])->name('riwayat-donor.export-pdf');
     Route::post('/cek-kelayakan-donor/submit', [DashboardController::class, 'submitKelayakan'])->name('cek-kelayakan.submit');
 
     // Butuh Darah Cepat
@@ -165,6 +168,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [PermintaanDonorController::class, 'managemenIndex'])->name('index');
         Route::get('/{id}', [PermintaanDonorController::class, 'managemenShow'])->name('show');
         Route::post('/{id}/update-status', [PermintaanDonorController::class, 'updateStatus'])->name('update-status');
+    });
+
+    Route::prefix('stok-darah')->name('stok-darah.')->group(function () {
+        Route::get('/', [App\Http\Controllers\StokDarahController::class, 'index'])->name('index');
+        Route::post('/update', [App\Http\Controllers\StokDarahController::class, 'update'])->name('update');
     });
     //detail kegiatan
     

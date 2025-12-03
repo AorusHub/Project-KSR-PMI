@@ -161,12 +161,12 @@ public function adminDashboard()
         
         // Hitung total donasi yang selesai
         $totalDonasi = DonasiDarah::where('pendonor_id', $pendonor->pendonor_id)
-            ->where('status_donasi', 'Selesai')
+            ->where('status_donasi', 'Berhasil')
             ->count();
         
         // Donasi terakhir
         $donasiTerakhir = DonasiDarah::where('pendonor_id', $pendonor->pendonor_id)
-            ->where('status_donasi', 'Selesai')
+            ->where('status_donasi', 'Berhasil')
             ->orderBy('tanggal_donasi', 'desc')
             ->first();
         
@@ -210,7 +210,7 @@ public function adminDashboard()
         
         // Statistik
         $totalBerhasil = DonasiDarah::where('pendonor_id', $pendonor->pendonor_id)
-            ->where('status_donasi', 'Selesai')
+            ->where('status_donasi', 'Berhasil')
             ->count();
         
         $totalPending = DonasiDarah::where('pendonor_id', $pendonor->pendonor_id)

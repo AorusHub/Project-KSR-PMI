@@ -111,18 +111,24 @@ class PermintaanDonorController extends Controller
             $query->where('status_permintaan', $request->status);
         }
 
+        // Filter berdasarkan tingkat urgensi
+        if ($request->filled('urgensi')) {
+            $query->where('tingkat_urgensi', $request->urgensi);
+        }
+
         // Search berdasarkan nama pasien atau golongan darah
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('nama_pasien', 'like', "%{$search}%")
-                  ->orWhere('gol_darah', 'like', "%{$search}%")
-                  ->orWhere('nomor_pelacakan', 'like', "%{$search}%");
+                ->orWhere('gol_darah', 'like', "%{$search}%")
+                ->orWhere('nomor_pelacakan', 'like', "%{$search}%");
             });
         }
 
         // Hitung statistik
         $totalPermintaan = PermintaanDonor::count();
+        $darurat = PermintaanDonor::where('tingkat_urgensi', 'Sangat Mendesak')->count();
         $belumTerpenuhi = PermintaanDonor::where('status_permintaan', 'Pending')->count();
         $diproses = PermintaanDonor::where('status_permintaan', 'Approved')->count();
         $terpenuhi = PermintaanDonor::where('status_permintaan', 'Completed')->count();
@@ -133,6 +139,7 @@ class PermintaanDonorController extends Controller
         return view('dashboard.dev.managemen-permintaan-darurat', compact(
             'permintaan',
             'totalPermintaan',
+            'darurat',
             'belumTerpenuhi',
             'diproses',
             'terpenuhi'

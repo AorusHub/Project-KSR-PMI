@@ -191,4 +191,28 @@ class PendonorController extends Controller
             return back()->with('error', 'Gagal memuat riwayat donasi');
         }
     }
+/**
+ * Export PDF riwayat donor untuk pendonor
+ */
+    public function exportPdf()
+    {
+        $pendonor = auth()->user()->pendonor;
+        $riwayatDonasi = $pendonor->donasiDarah()->orderBy('tanggal_donasi', 'desc')->get();
+        
+        $totalBerhasil = $riwayatDonasi->where('status_donasi', 'Berhasil')->count();
+        $nyawaTerselamatkan = $totalBerhasil * 3;
+        $persentaseKeberhasilan = $riwayatDonasi->count() > 0 
+            ? round(($totalBerhasil / $riwayatDonasi->count()) * 100) 
+            : 0;
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('dashboard.pendonor.riwayat-donor-pdf', compact(
+            'pendonor',
+            'riwayatDonasi',
+            'totalBerhasil',
+            'nyawaTerselamatkan',
+            'persentaseKeberhasilan'
+        ));
+
+        return $pdf->download('riwayat-donor-' . $pendonor->nama . '.pdf');
+    }
 }
