@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             PermintaanDonorSeeder::class,
             InfoUtdSeeder::class,
             DonasiDarahSeeder::class,
+            StokDarahSeeder::class,
         ]);
     }
 }

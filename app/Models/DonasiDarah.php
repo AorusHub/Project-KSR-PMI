@@ -13,8 +13,10 @@ class DonasiDarah extends Model
     protected $fillable = [
         'pendonor_id',
         'kegiatan_id',
+        'permintaan_id',
         'tanggal_donasi',
-        'lokasi_donasi',
+        'jenis_donor',
+        'lokasi_donor',      // ✅ HARUS ADA INI
         'volume_darah',
         'status_donasi',
     ];

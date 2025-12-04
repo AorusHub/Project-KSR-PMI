@@ -35,53 +35,65 @@ class KegiatanDonorController extends Controller
         return view('kegiatan.detail_kegiatan', compact('kegiatan', 'totalDonor'));
     }
 
-    // ✅ TAMBAHKAN METHOD DAFTAR
+    // ✅ PERBAIKI METHOD DAFTAR
     public function daftar(Request $request, $id)
     {
-        if (!Auth::check()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Anda harus login terlebih dahulu'
-            ], 401);
-        }
+        try {
+            if (!Auth::check()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda harus login terlebih dahulu'
+                ], 401);
+            }
 
-        $user = Auth::user();
-        
-        if (!$user->pendonor) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Anda belum terdaftar sebagai pendonor'
-            ], 403);
-        }
+            $user = Auth::user();
+            
+            if (!$user->pendonor) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda belum melengkapi data pendonor.'
+                ], 403);
+            }
 
-        $kegiatan = KegiatanDonor::findOrFail($id);
+            $kegiatan = KegiatanDonor::findOrFail($id);
 
-        // Cek apakah sudah pernah daftar
-        $sudahDaftar = DonasiDarah::where('pendonor_id', $user->pendonor->pendonor_id)
-            ->where('kegiatan_id', $kegiatan->kegiatan_id)
-            ->exists();
+            // Cek apakah sudah pernah daftar
+            $sudahDaftar = DonasiDarah::where('pendonor_id', $user->pendonor->pendonor_id)
+                ->where('kegiatan_id', $kegiatan->kegiatan_id)
+                ->exists();
 
-        if ($sudahDaftar) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Anda sudah terdaftar untuk kegiatan ini'
+            if ($sudahDaftar) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda sudah terdaftar untuk kegiatan ini'
+                ], 400);
+            }
+
+            // ✅ TAMBAHKAN lokasi_donor
+            DonasiDarah::create([
+                'pendonor_id' => $user->pendonor->pendonor_id,
+                'kegiatan_id' => $kegiatan->kegiatan_id,
+                'tanggal_donasi' => $kegiatan->tanggal,
+                'jenis_donor' => 'Sukarela',
+                'lokasi_donor' => $kegiatan->lokasi,
+                'status_donasi' => 'Terdaftar',
             ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Berhasil mendaftar kegiatan donor darah'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error daftar kegiatan:', [
+                'message' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
         }
-
-        // Simpan pendaftaran
-        DonasiDarah::create([
-            'pendonor_id' => $user->pendonor->pendonor_id,
-            'kegiatan_id' => $kegiatan->kegiatan_id,
-            'tanggal_donasi' => $kegiatan->tanggal,
-            'jenis_donor' => 'Sukarela',
-            'lokasi_donor' => $kegiatan->lokasi,
-            'status_donasi' => 'Terdaftar',
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Berhasil mendaftar kegiatan donor darah'
-        ]);
     }
 
     // Admin: Daftar semua kegiatan (Manajemen Kegiatan)

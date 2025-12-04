@@ -70,6 +70,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-900 mb-2">Filter Status</label>
                     <select name="status" 
+                            onchange="this.form.submit()"
                             class="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
                         <option value="">Semua Status</option>
                         <option value="Pending" {{ request('status') == 'Pending' ? 'selected' : '' }}>Baru</option>
@@ -83,6 +84,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-900 mb-2">Filter Tingkat Urgensi</label>
                     <select name="urgensi" 
+                            onchange="this.form.submit()"
                             class="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
                         <option value="">Semua Tingkat Urgensi</option>
                         <option value="Sangat Mendesak" {{ request('urgensi') == 'Sangat Mendesak' ? 'selected' : '' }}>Darurat</option>
@@ -171,7 +173,7 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center gap-2">
                                     {{-- View Detail --}}
-                                    <button onclick="window.location.href='{{ route('managemen.permintaan-darurat.show', $item->permintaan_id) }}'"
+                                    <button onclick="showDetail({{ $item->permintaan_id }})"
                                        class="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                                        title="Lihat Detail">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -179,14 +181,6 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                         </svg>
                                     </button>
-
-                                    {{-- Proses (hanya jika Pending) --}}
-                                    @if($item->status_permintaan == 'Pending')
-                                    <button onclick="prosesPermintaan({{ $item->permintaan_id }})"
-                                       class="px-4 py-1.5 text-xs font-semibold text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors">
-                                        Proses
-                                    </button>
-                                    @endif
                                 </div>
                             </td>
                         </tr>
@@ -216,36 +210,273 @@
     </div>
 </div>
 
+{{-- Modal Detail Permintaan --}}
+<div id="detailModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        {{-- Header --}}
+        <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+            <h3 class="text-lg font-bold text-gray-900">Detail Permintaan Donor</h3>
+            <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        {{-- Content --}}
+        <div id="modalContent" class="p-6">
+            {{-- Content will be loaded here --}}
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script>
-function prosesPermintaan(id) {
-    if (confirm('Apakah Anda yakin ingin memproses permintaan ini?')) {
-        fetch(`/managemen-permintaan-darurat/${id}/update-status`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-                status_permintaan: 'Approved'
-            })
-        })
+// Auto-submit ketika Enter di search box
+document.querySelector('input[name="search"]')?.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        this.form.submit();
+    }
+});
+
+function showDetail(id) {
+    // Show modal
+    document.getElementById('detailModal').classList.remove('hidden');
+    
+    // Fetch detail data
+    fetch(`/managemen-permintaan-darurat/${id}/detail`)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert('Permintaan berhasil diproses!');
-                window.location.reload();
+                renderDetail(data.data);
             } else {
-                alert(data.message || 'Terjadi kesalahan');
+                alert('Gagal memuat data');
+                closeModal();
             }
         })
         .catch(error => {
-            alert('Terjadi kesalahan');
             console.error(error);
+            alert('Terjadi kesalahan');
+            closeModal();
         });
-    }
 }
+
+function renderDetail(data) {
+    const statusColors = {
+        'Pending': 'bg-blue-100 text-blue-700',
+        'Approved': 'bg-yellow-100 text-yellow-700',
+        'Completed': 'bg-green-100 text-green-700',
+        'Rejected': 'bg-gray-100 text-gray-700'
+    };
+
+    const statusText = {
+        'Pending': 'Baru',
+        'Approved': 'Diproses',
+        'Completed': 'Terpenuhi',
+        'Rejected': 'Ditolak'
+    };
+
+    const urgensiColors = {
+        'Sangat Mendesak': 'text-red-600',
+        'Mendesak': 'text-yellow-600',
+        'Normal': 'text-green-600'
+    };
+
+    const urgensiText = {
+        'Sangat Mendesak': 'Darurat',
+        'Mendesak': 'Mendesak',
+        'Normal': 'Normal'
+    };
+
+    const html = `
+        <!-- Top Info -->
+        <div class="grid grid-cols-3 gap-4 mb-6">
+            <div>
+                <p class="text-xs text-gray-600 mb-1">Nomor Tracking</p>
+                <p class="text-sm font-bold text-red-600">${data.nomor_pelacakan}</p>
+            </div>
+            <div>
+                <p class="text-xs text-gray-600 mb-1">Tanggal</p>
+                <p class="text-sm font-semibold text-gray-900">${new Date(data.created_at).toLocaleDateString('id-ID')}</p>
+            </div>
+            <div>
+                <p class="text-xs text-gray-600 mb-1">Status</p>
+                <span class="px-2 py-1 text-xs font-semibold rounded-md ${statusColors[data.status_permintaan]}">
+                    ${statusText[data.status_permintaan]}
+                </span>
+            </div>
+        </div>
+
+        <!-- Data Pasien -->
+        <div class="mb-6">
+            <h4 class="text-sm font-bold text-gray-900 mb-3">Data Pasien</h4>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <p class="text-xs text-gray-600 mb-1">Nama Pasien</p>
+                    <p class="text-sm font-semibold text-gray-900">${data.nama_pasien}</p>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-600 mb-1">Golongan Darah</p>
+                    <p class="text-sm font-bold text-red-600">${data.gol_darah}</p>
+                </div>
+                <div class="col-span-2">
+                    <p class="text-xs text-gray-600 mb-1">Tempat Dirawat</p>
+                    <p class="text-sm text-gray-900 flex items-center gap-1">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        ${data.tempat_rawat}
+                    </p>
+                </div>
+                <div class="col-span-2">
+                    <p class="text-xs text-gray-600 mb-1">Riwayat Penyakit</p>
+                    <p class="text-sm text-gray-900">${data.riwayat || '-'}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kebutuhan Darah -->
+        <div class="mb-6">
+            <h4 class="text-sm font-bold text-gray-900 mb-3">Kebutuhan Darah</h4>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <p class="text-xs text-gray-600 mb-1">Jenis Permintaan</p>
+                    <p class="text-sm font-semibold text-gray-900">${data.jenis_permintaan || 'Darah Lengkap (Whole Blood)'}</p>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-600 mb-1">Jumlah Kantong</p>
+                    <p class="text-sm font-bold text-gray-900">${data.jumlah_kantong} kantong</p>
+                </div>
+                <div class="col-span-2">
+                    <p class="text-xs text-gray-600 mb-1">Tingkat Urgensi</p>
+                    <p class="text-sm font-bold ${urgensiColors[data.tingkat_urgensi]}">${urgensiText[data.tingkat_urgensi]}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kontak Keluarga -->
+        <div class="mb-6">
+            <h4 class="text-sm font-bold text-gray-900 mb-3">Kontak Keluarga</h4>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <p class="text-xs text-gray-600 mb-1">Nama Kontak</p>
+                    <p class="text-sm font-semibold text-gray-900 flex items-center gap-1">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                        ${data.nama_kontak || '-'}
+                    </p>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-600 mb-1">No. HP</p>
+                    <p class="text-sm font-semibold text-blue-600 flex items-center gap-1">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                        </svg>
+                        ${data.no_hp || '-'}
+                    </p>
+                </div>
+                <div class="col-span-2">
+                    <p class="text-xs text-gray-600 mb-1">Hubungan</p>
+                    <p class="text-sm text-gray-900">${data.hubungan || '-'}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex gap-3 pt-4 border-t border-gray-200">
+            ${data.status_permintaan === 'Pending' ? `
+                <button onclick="prosesPermintaan(${data.permintaan_id}, '${data.gol_darah}', '${data.jenis_permintaan || 'Darah Lengkap (Whole Blood)'}', ${data.jumlah_kantong})" 
+                        class="flex-1 px-4 py-3 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700 transition-colors">
+                    Proses Permintaan
+                </button>
+            ` : ''}
+            <button onclick="closeModal()" 
+                    class="flex-1 px-4 py-3 bg-gray-100 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors">
+                Tutup
+            </button>
+        </div>
+    `;
+
+    document.getElementById('modalContent').innerHTML = html;
+}
+
+function closeModal() {
+    document.getElementById('detailModal').classList.add('hidden');
+    document.getElementById('modalContent').innerHTML = '';
+}
+
+function prosesPermintaan(id, golDarah, jenisDarah, jumlahKantong) {
+    // Cek stok terlebih dahulu
+    fetch('/managemen-permintaan-darurat/cek-stok', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            golongan_darah: golDarah,
+            jenis_darah: jenisDarah,
+            jumlah_kantong: jumlahKantong
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.stok_cukup) {
+            // Konfirmasi proses
+            if (confirm(`Stok darah tersedia: ${data.stok_tersedia} kantong\n\nApakah Anda yakin ingin memproses permintaan ini?\nStok akan berkurang ${jumlahKantong} kantong.`)) {
+                // Proses permintaan dan kurangi stok
+                processRequest(id, golDarah, jenisDarah, jumlahKantong);
+            }
+        } else {
+            alert(`Stok darah tidak mencukupi!\n\nStok tersedia: ${data.stok_tersedia} kantong\nDibutuhkan: ${jumlahKantong} kantong\nKekurangan: ${jumlahKantong - data.stok_tersedia} kantong`);
+        }
+    })
+    .catch(error => {
+        console.error(error);
+        alert('Terjadi kesalahan saat mengecek stok');
+    });
+}
+
+function processRequest(id, golDarah, jenisDarah, jumlahKantong) {
+    fetch(`/managemen-permintaan-darurat/${id}/proses`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            golongan_darah: golDarah,
+            jenis_darah: jenisDarah,
+            jumlah_kantong: jumlahKantong
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Permintaan berhasil diproses!\nStatus: Terpenuhi\nStok darah telah dikurangi.');
+            closeModal();
+            window.location.reload();
+        } else {
+            alert(data.message || 'Terjadi kesalahan');
+        }
+    })
+    .catch(error => {
+        console.error(error);
+        alert('Terjadi kesalahan');
+    });
+}
+
+// Close modal when clicking outside
+document.getElementById('detailModal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeModal();
+    }
+});
 </script>
 @endpush
 @endsection

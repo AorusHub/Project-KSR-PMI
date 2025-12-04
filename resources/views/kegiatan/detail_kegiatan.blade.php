@@ -150,10 +150,10 @@
 
                        {{-- ✅ BUTTON BERDASARKAN ROLE --}}
                         @auth
-                            @if(auth()->user()->staf or auth()->user()->admin)
-                                {{-- ✅ BUTTON UNTUK ADMIN & STAF: Lihat Peserta --}}
-                                <a href="{{ route('kegiatan.donor', $kegiatan->kegiatan_id) }}" 
-                                class="block w-full py-3 rounded-lg font-bold text-white text-sm text-center transition-all duration-200 shadow-md bg-red-600 hover:bg-red-700">
+                            @if(in_array(auth()->user()->role, ['admin', 'staf']))
+                                {{-- ✅ BUTTON UNTUK ADMIN & STAF: Lihat Daftar Peserta --}}
+                                <a href="{{ route('kegiatan.peserta', $kegiatan->kegiatan_id) }}" 
+                                   class="block w-full py-3 rounded-lg font-bold text-white text-sm text-center transition-all duration-200 shadow-md bg-blue-600 hover:bg-blue-700">
                                     <div class="flex items-center justify-center">
                                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
@@ -162,10 +162,9 @@
                                     </div>
                                 </a>
                             @else
-                                {{-- ✅ BUTTON UNTUK PENDONOR: Daftar Kegiatan --}}
+                                {{-- ✅ BUTTON UNTUK PENDONOR --}}
                                 @php
                                     $sudahDaftar = false;
-                                    // ✅ CEK DULU apakah user punya data pendonor
                                     if(auth()->user()->pendonor) {
                                         $sudahDaftar = $kegiatan->donasiDarah()
                                             ->where('pendonor_id', auth()->user()->pendonor->pendonor_id)
@@ -174,7 +173,7 @@
                                 @endphp
 
                                 @if(auth()->user()->pendonor)
-                                    {{-- ✅ Jika punya data pendonor, tampilkan button daftar --}}
+                                    {{-- User sudah punya data pendonor --}}
                                     <button onclick="handleDaftar({{ $kegiatan->kegiatan_id }}, {{ $sudahDaftar ? 'true' : 'false' }})" 
                                             id="btnDaftar"
                                             class="w-full py-3 rounded-lg font-bold text-white text-sm transition-all duration-200 shadow-md
@@ -183,15 +182,11 @@
                                         {{ $sudahDaftar ? '✓ Sudah Terdaftar' : 'Daftar Kegiatan' }}
                                     </button>
                                 @else
-                                <a href="{{ route('kegiatan.peserta', $kegiatan->kegiatan_id) }}" 
-                                class="block w-full py-3 rounded-lg font-bold text-white text-sm text-center transition-all duration-200 shadow-md bg-red-600 hover:bg-red-700">
-                                    <div class="flex items-center justify-center">
-                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
-                                        </svg>
-                                        Lihat Daftar Peserta
-                                    </div>
-                                </a>
+                                    {{-- User belum lengkapi profil pendonor --}}
+                                    <button onclick="showModal('modalProfilRequired')" 
+                                            class="w-full py-3 rounded-lg font-bold text-white text-sm transition-all duration-200 shadow-md bg-yellow-500 hover:bg-yellow-600">
+                                        Lengkapi Profil Pendonor
+                                    </button>
                                 @endif
                             @endif
                         @else
@@ -286,21 +281,26 @@
 @push('scripts')
 <script>
 function handleDaftar(kegiatanId, sudahDaftar) {
-    if (sudahDaftar) return;
-
-    @auth
-        daftarKegiatan(kegiatanId);
-    @else
-        showModal('modalLoginRequired');
-    @endauth
+    if (sudahDaftar) {
+        alert('Anda sudah terdaftar di kegiatan ini');
+        return;
+    }
+    daftarKegiatan(kegiatanId);
 }
 
 function daftarKegiatan(kegiatanId) {
-    fetch(`/kegiatan-donor/${kegiatanId}/daftar`, {
+    const btn = document.getElementById('btnDaftar');
+    const originalText = btn.innerHTML;
+    
+    btn.innerHTML = 'Mendaftar...';
+    btn.disabled = true;
+
+    fetch(`/kegiatan/${kegiatanId}/daftar`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
         }
     })
     .then(response => response.json())
@@ -309,11 +309,15 @@ function daftarKegiatan(kegiatanId) {
             showModal('modalSuccess');
         } else {
             alert(data.message || 'Gagal mendaftar');
+            btn.innerHTML = originalText;
+            btn.disabled = false;
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Terjadi kesalahan');
+        alert('Terjadi kesalahan saat mendaftar');
+        btn.innerHTML = originalText;
+        btn.disabled = false;
     });
 }
 
@@ -331,6 +335,15 @@ function closeModalAndReload(modalId) {
     closeModal(modalId);
     location.reload();
 }
+
+// Close modal saat klik di luar
+document.querySelectorAll('[id^="modal"]').forEach(modal => {
+    modal.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeModal(this.id);
+        }
+    });
+});
 </script>
 @endpush
 @endsection

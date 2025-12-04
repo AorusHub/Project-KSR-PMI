@@ -1,5 +1,5 @@
 <?php
-// filepath: c:\xampp\htdocs\ksr-pmi\Project-KSR-PMI\app\Http\Controllers\StokDarahController.php
+// filepath: [StokDarahController.php](http://_vscodecontentref_/0)
 
 namespace App\Http\Controllers;
 
@@ -12,51 +12,65 @@ class StokDarahController extends Controller
     /**
      * ✅ Tampilkan halaman stok darah (Admin & Staf only)
      */
-    public function index()
+    public function index(Request $request)
     {
         // Authorization: Hanya admin dan staf yang bisa akses
         if (!in_array(Auth::user()->role, ['admin', 'staf'])) {
             abort(403, 'Unauthorized action.');
         }
 
+        // Get filter jenis darah
+        $filterJenis = $request->get('jenis_darah', 'Semua');
+
+        // Base query
+        $query = StokDarah::query();
+
+        // Apply filter jika bukan "Semua"
+        if ($filterJenis !== 'Semua') {
+            $query->where('jenis_darah', $filterJenis);
+        }
+
         // Data stok darah per golongan
         $stokDarah = [
-            'A+' => StokDarah::where('golongan_darah', 'A+')->sum('jumlah_kantong') ?? 0,
-            'B+' => StokDarah::where('golongan_darah', 'B+')->sum('jumlah_kantong') ?? 0,
-            'O+' => StokDarah::where('golongan_darah', 'O+')->sum('jumlah_kantong') ?? 0,
-            'AB+' => StokDarah::where('golongan_darah', 'AB+')->sum('jumlah_kantong') ?? 0,
-            'A-' => StokDarah::where('golongan_darah', 'A-')->sum('jumlah_kantong') ?? 0,
-            'B-' => StokDarah::where('golongan_darah', 'B-')->sum('jumlah_kantong') ?? 0,
-            'O-' => StokDarah::where('golongan_darah', 'O-')->sum('jumlah_kantong') ?? 0,
-            'AB-' => StokDarah::where('golongan_darah', 'AB-')->sum('jumlah_kantong') ?? 0,
+            'A+' => (clone $query)->where('golongan_darah', 'A+')->sum('jumlah_kantong') ?? 0,
+            'B+' => (clone $query)->where('golongan_darah', 'B+')->sum('jumlah_kantong') ?? 0,
+            'O+' => (clone $query)->where('golongan_darah', 'O+')->sum('jumlah_kantong') ?? 0,
+            'AB+' => (clone $query)->where('golongan_darah', 'AB+')->sum('jumlah_kantong') ?? 0,
+            'A-' => (clone $query)->where('golongan_darah', 'A-')->sum('jumlah_kantong') ?? 0,
+            'B-' => (clone $query)->where('golongan_darah', 'B-')->sum('jumlah_kantong') ?? 0,
+            'O-' => (clone $query)->where('golongan_darah', 'O-')->sum('jumlah_kantong') ?? 0,
+            'AB-' => (clone $query)->where('golongan_darah', 'AB-')->sum('jumlah_kantong') ?? 0,
         ];
 
         // Hitung perubahan bulan ini
         $perubahanBulanIni = [
-            'A+' => $this->hitungPerubahan('A+'),
-            'B+' => $this->hitungPerubahan('B+'),
-            'O+' => $this->hitungPerubahan('O+'),
-            'AB+' => $this->hitungPerubahan('AB+'),
-            'A-' => $this->hitungPerubahan('A-'),
-            'B-' => $this->hitungPerubahan('B-'),
-            'O-' => $this->hitungPerubahan('O-'),
-            'AB-' => $this->hitungPerubahan('AB-'),
+            'A+' => $this->hitungPerubahan('A+', $filterJenis),
+            'B+' => $this->hitungPerubahan('B+', $filterJenis),
+            'O+' => $this->hitungPerubahan('O+', $filterJenis),
+            'AB+' => $this->hitungPerubahan('AB+', $filterJenis),
+            'A-' => $this->hitungPerubahan('A-', $filterJenis),
+            'B-' => $this->hitungPerubahan('B-', $filterJenis),
+            'O-' => $this->hitungPerubahan('O-', $filterJenis),
+            'AB-' => $this->hitungPerubahan('AB-', $filterJenis),
         ];
 
-        return view('dashboard.dev.stok-darah', compact('stokDarah', 'perubahanBulanIni'));
+        return view('dashboard.dev.stok-darah', compact('stokDarah', 'perubahanBulanIni', 'filterJenis'));
     }
 
     /**
      * Hitung perubahan stok bulan ini
      */
-    private function hitungPerubahan($golongan)
+    private function hitungPerubahan($golongan, $filterJenis = 'Semua')
     {
-        $bulanIni = StokDarah::where('golongan_darah', $golongan)
+        $query = StokDarah::where('golongan_darah', $golongan)
             ->whereMonth('created_at', now()->month)
-            ->whereYear('created_at', now()->year)
-            ->sum('jumlah_kantong');
+            ->whereYear('created_at', now()->year);
 
-        return $bulanIni ?? 0;
+        if ($filterJenis !== 'Semua') {
+            $query->where('jenis_darah', $filterJenis);
+        }
+
+        return $query->sum('jumlah_kantong') ?? 0;
     }
 
     /**
@@ -74,6 +88,7 @@ class StokDarahController extends Controller
 
         $validated = $request->validate([
             'golongan_darah' => 'required|in:A+,A-,B+,B-,AB+,AB-,O+,O-',
+            'jenis_darah' => 'required|in:Darah Lengkap (Whole Blood),Packed Red Cells (PRC),Trombosit (TC),Plasma',
             'jumlah_kantong' => 'required|integer',
             'keterangan' => 'nullable|string'
         ]);
@@ -81,6 +96,7 @@ class StokDarahController extends Controller
         try {
             StokDarah::create([
                 'golongan_darah' => $validated['golongan_darah'],
+                'jenis_darah' => $validated['jenis_darah'],
                 'jumlah_kantong' => $validated['jumlah_kantong'],
                 'keterangan' => $validated['keterangan'] ?? 'Update manual',
             ]);

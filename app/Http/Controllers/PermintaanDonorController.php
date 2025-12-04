@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\PermintaanDonor;
+use App\Models\StokDarah;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class PermintaanDonorController extends Controller
 {
@@ -95,7 +97,7 @@ class PermintaanDonorController extends Controller
     }
 
     /**
-     * ✅ BARU: Tampilkan daftar permintaan donor (untuk admin & staff)
+     * ✅ Tampilkan daftar permintaan donor (untuk admin & staff)
      */
     public function managemenIndex(Request $request)
     {
@@ -121,8 +123,8 @@ class PermintaanDonorController extends Controller
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('nama_pasien', 'like', "%{$search}%")
-                ->orWhere('gol_darah', 'like', "%{$search}%")
-                ->orWhere('nomor_pelacakan', 'like', "%{$search}%");
+                  ->orWhere('gol_darah', 'like', "%{$search}%")
+                  ->orWhere('nomor_pelacakan', 'like', "%{$search}%");
             });
         }
 
@@ -147,7 +149,7 @@ class PermintaanDonorController extends Controller
     }
 
     /**
-     * ✅ BARU: Tampilkan detail permintaan (untuk admin & staff)
+     * ✅ Tampilkan detail permintaan (untuk admin & staff)
      */
     public function managemenShow($id)
     {
@@ -161,7 +163,101 @@ class PermintaanDonorController extends Controller
     }
 
     /**
-     * ✅ BARU: Update status permintaan (untuk admin & staff)
+     * ✅ Get detail permintaan untuk modal (AJAX)
+     */
+    public function getDetail($id)
+    {
+        try {
+            $permintaan = PermintaanDonor::findOrFail($id);
+
+            return response()->json([
+                'success' => true,
+                'data' => $permintaan
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data tidak ditemukan'
+            ], 404);
+        }
+    }
+
+    /**
+     * ✅ Cek stok darah sebelum proses
+     */
+    public function cekStok(Request $request)
+    {
+        $validated = $request->validate([
+            'golongan_darah' => 'required|string',
+            'jenis_darah' => 'required|string',
+            'jumlah_kantong' => 'required|integer'
+        ]);
+
+        // Hitung total stok yang tersedia
+        $stokTersedia = StokDarah::where('golongan_darah', $validated['golongan_darah'])
+            ->where('jenis_darah', $validated['jenis_darah'])
+            ->sum('jumlah_kantong');
+
+        return response()->json([
+            'stok_cukup' => $stokTersedia >= $validated['jumlah_kantong'],
+            'stok_tersedia' => $stokTersedia,
+            'jumlah_dibutuhkan' => $validated['jumlah_kantong']
+        ]);
+    }
+
+    /**
+     * ✅ Proses permintaan dan kurangi stok
+     */
+    public function prosesPermintaan(Request $request, $id)
+    {
+        // Authorization
+        if (!in_array(Auth::user()->role, ['admin', 'staf'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized action.'
+            ], 403);
+        }
+
+        $validated = $request->validate([
+            'golongan_darah' => 'required|string',
+            'jenis_darah' => 'required|string',
+            'jumlah_kantong' => 'required|integer'
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // Update status permintaan
+            $permintaan = PermintaanDonor::findOrFail($id);
+            $permintaan->status_permintaan = 'Completed';
+            $permintaan->save();
+
+            // Kurangi stok darah (catat sebagai pengurangan)
+            StokDarah::create([
+                'golongan_darah' => $validated['golongan_darah'],
+                'jenis_darah' => $validated['jenis_darah'],
+                'jumlah_kantong' => -$validated['jumlah_kantong'], // Negative value untuk pengurangan
+                'keterangan' => "Digunakan untuk permintaan {$permintaan->nomor_pelacakan} - {$permintaan->nama_pasien}",
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Permintaan berhasil diproses dan stok darah telah dikurangi'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * ✅ Update status permintaan (untuk admin & staff)
      */
     public function updateStatus(Request $request, $id)
     {

@@ -15,6 +15,7 @@ class StokDarah extends Model
 
     protected $fillable = [
         'golongan_darah',
+        'jenis_darah',
         'jumlah_kantong',
         'keterangan',
     ];

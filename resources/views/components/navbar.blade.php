@@ -190,7 +190,7 @@
                                 </div>
                             </a>
 
-                            @if($user->isPendonor())
+                            {{-- @if($user->isPendonor())
                             <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                                 <div class="flex items-center space-x-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -210,7 +210,7 @@
                             </a>
 
                             <div class="border-t border-gray-200 my-2"></div>
-                            @endif
+                            @endif --}}
 
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf

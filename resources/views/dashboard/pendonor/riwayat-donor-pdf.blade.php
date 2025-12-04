@@ -317,11 +317,11 @@
                 <td>{{ $donasi->volume_darah }} ml</td>
                 <td>
                     @if($donasi->status_donasi == 'Berhasil')
-                        <span class="status-badge status-berhasil">✓ Berhasil</span>
+                        <span class="status-badge status-berhasil"> Berhasil</span>
                     @elseif($donasi->status_donasi == 'Terdaftar')
                         <span class="status-badge" style="background-color: #dbeafe; color: #1e40af;">⏳ Terdaftar</span>
                     @elseif($donasi->status_donasi == 'Gagal')
-                        <span class="status-badge status-gagal">✗ Gagal</span>
+                        <span class="status-badge status-gagal"> Gagal</span>
                     @else
                         <span class="status-badge" style="background-color: #f3f4f6; color: #6b7280;">⊘ Dibatalkan</span>
                     @endif

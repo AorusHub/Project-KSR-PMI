@@ -16,6 +16,7 @@ use App\Http\Controllers\PermintaanDonorController;
 use App\Http\Controllers\Admin\LaporanController;
 use App\Http\Controllers\PendonorController;
 use App\Http\Controllers\StokDarahController;
+use App\Http\Controllers\VerifikasiKelayakanController;
 // ...existing code...
 /*
 |--------------------------------------------------------------------------
@@ -25,9 +26,13 @@ use App\Http\Controllers\StokDarahController;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // ✅ PUBLIC KEGIATAN ROUTES (untuk user biasa/guest)
-Route::prefix('kegiatan-donor')->name('kegiatan.')->group(function () {
+Route::prefix('kegiatan')->name('kegiatan.')->group(function () {
     Route::get('/', [KegiatanDonorController::class, 'index'])->name('index');
     Route::get('/{id}', [KegiatanDonorController::class, 'show'])->name('show');
+
+    Route::post('/{id}/daftar', [KegiatanDonorController::class, 'daftar'])
+    ->name('daftar')
+    ->middleware('auth');
 });
 
 Route::get('/faq', [PageController::class, 'faq'])->name('faq');
@@ -89,6 +94,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
     // ✅ Kegiatan & Partisipan Routes
     Route::get('/kegiatan/{id}', [KegiatanDonorController::class, 'adminShow'])->name('kegiatan.show');
+    Route::post('/kegiatan/{id}/daftar', [KegiatanDonorController::class, 'daftar'])->name('kegiatan.daftar')->middleware('auth');
     Route::get('/kegiatan/{id}/partisipan', [KegiatanDonorController::class, 'showPartisipan'])->name('kegiatan.partisipan');
     Route::get('/kegiatan/{id}/partisipan/search', [KegiatanDonorController::class, 'showPartisipan'])->name('kegiatan.partisipan.search');
     
@@ -128,10 +134,6 @@ Route::middleware(['auth', 'role:pendonor'])->prefix('pendonor')->name('pendonor
     Route::get('/formulir-permintaan-darah', [PermintaanDonorController::class, 'create'])->name('permintaan-darah.create');
     Route::post('/formulir-permintaan-darah', [PermintaanDonorController::class, 'store'])->name('permintaan-darah.simpan');
     Route::get('/permintaan-darah/{id}/sukses', [PermintaanDonorController::class, 'success'])->name('permintaan-darah.sukses');
-    
-    // Profile
-    Route::get('/profil', [DashboardController::class, 'profil'])->name('profil');
-    Route::put('/profil', [DashboardController::class, 'updateProfil'])->name('profil.update');
 });
 
 /*
@@ -159,21 +161,45 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/managemen-kegiatan/{id}', [KegiatanDonorController::class, 'destroy'])
         ->name('managemen.kegiatan.destroy'); 
     
-    Route::get('/kegiatan-donor/{id}/peserta', [KegiatanDonorController::class, 'peserta'])
+    Route::get('/kegiatan/{id}/peserta', [KegiatanDonorController::class, 'peserta'])
         ->name('kegiatan.peserta');
-    Route::get('/kegiatan-donor/{id}/peserta/search', [KegiatanDonorController::class, 'searchPeserta'])
+    Route::get('/kegiatan/{id}/peserta/search', [KegiatanDonorController::class, 'searchPeserta'])
         ->name('kegiatan.peserta.search');
     
     Route::prefix('managemen-permintaan-darurat')->name('managemen.permintaan-darurat.')->group(function () {
         Route::get('/', [PermintaanDonorController::class, 'managemenIndex'])->name('index');
-        Route::get('/{id}', [PermintaanDonorController::class, 'managemenShow'])->name('show');
-        Route::post('/{id}/update-status', [PermintaanDonorController::class, 'updateStatus'])->name('update-status');
+        Route::get('/{id}/detail', [PermintaanDonorController::class, 'getDetail'])->name('detail');
+        Route::post('/cek-stok', [PermintaanDonorController::class, 'cekStok'])->name('cek-stok');
+        Route::post('/{id}/proses', [PermintaanDonorController::class, 'prosesPermintaan'])->name('proses');
     });
 
     Route::prefix('stok-darah')->name('stok-darah.')->group(function () {
         Route::get('/', [App\Http\Controllers\StokDarahController::class, 'index'])->name('index');
         Route::post('/update', [App\Http\Controllers\StokDarahController::class, 'update'])->name('update');
+
     });
+
+    // ✅ VERIFIKASI KELAYAKAN (Admin & Staf)
+    Route::prefix('verifikasi-kelayakan')->name('verifikasi.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Dashboard\VerifikasiKelayakanController::class, 'index'])
+            ->name('kelayakan.index');
+        Route::get('/{id}', [App\Http\Controllers\Dashboard\VerifikasiKelayakanController::class, 'show'])
+            ->name('kelayakan.show');
+        Route::post('/{id}/approve', [App\Http\Controllers\Dashboard\VerifikasiKelayakanController::class, 'approve'])
+            ->name('kelayakan.approve');
+        Route::post('/{id}/reject', [App\Http\Controllers\Dashboard\VerifikasiKelayakanController::class, 'reject'])
+            ->name('kelayakan.reject');
+    });
+    // ✅ DONOR DARURAT (untuk Pendonor merespons)
+    Route::prefix('donor-darurat')->name('donor-darurat.')->group(function () {
+        Route::get('/', [PermintaanDonorController::class, 'darahDarurat'])
+            ->name('index')
+            ->middleware('role:pendonor');
+        Route::post('/{id}/respond', [PermintaanDonorController::class, 'respondDarurat'])
+            ->name('respond')
+            ->middleware('role:pendonor');
+    });
+
     //detail kegiatan
     
     // ✅ ROUTES UNTUK MELIHAT PESERTA KEGIATAN (Admin & Staf only)

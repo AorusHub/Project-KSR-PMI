@@ -12,6 +12,13 @@ return new class extends Migration
         Schema::create('stok_darah', function (Blueprint $table) {
             $table->id('stok_id');
             $table->enum('golongan_darah', ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']);
+            $table->enum('jenis_darah', [
+                'Darah Lengkap (Whole Blood)',
+                'Packed Red Cells (PRC)',
+                'Trombosit (TC)',
+                'Plasma',
+                'Semua'
+            ])->default('Darah Lengkap (Whole Blood)');
             $table->integer('jumlah_kantong');
             $table->string('keterangan')->nullable();
             $table->timestamps();

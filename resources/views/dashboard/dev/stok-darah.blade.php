@@ -14,15 +14,28 @@
                 <p class="text-gray-600 mt-1">Kelola seluruh stok darah KSR PMI UNHAS</p>
             </div>
             
-            {{-- Filter Tingkat Urgensi --}}
+            {{-- Filter Jenis Darah --}}
             <div class="w-80">
-                <label class="block text-sm font-medium text-gray-900 mb-2">Filter Tingkat Urgensi</label>
-                <select class="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white">
-                    <option>Semua Tingkat Urgensi</option>
-                    <option>Darurat</option>
-                    <option>Mendesak</option>
-                    <option>Normal</option>
-                </select>
+                <label class="block text-sm font-medium text-gray-900 mb-2">Filter Jenis Darah</label>
+                <form method="GET" action="{{ route('stok-darah.index') }}">
+                    <select name="jenis_darah" 
+                            onchange="this.form.submit()"
+                            class="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white">
+                        <option value="Semua" {{ $filterJenis == 'Semua' ? 'selected' : '' }}>Semua</option>
+                        <option value="Darah Lengkap (Whole Blood)" {{ $filterJenis == 'Darah Lengkap (Whole Blood)' ? 'selected' : '' }}>
+                            Darah Lengkap (Whole Blood)
+                        </option>
+                        <option value="Packed Red Cells (PRC)" {{ $filterJenis == 'Packed Red Cells (PRC)' ? 'selected' : '' }}>
+                            Packed Red Cells (PRC)
+                        </option>
+                        <option value="Trombosit (TC)" {{ $filterJenis == 'Trombosit (TC)' ? 'selected' : '' }}>
+                            Trombosit (TC)
+                        </option>
+                        <option value="Plasma" {{ $filterJenis == 'Plasma' ? 'selected' : '' }}>
+                            Plasma
+                        </option>
+                    </select>
+                </form>
             </div>
         </div>
 
