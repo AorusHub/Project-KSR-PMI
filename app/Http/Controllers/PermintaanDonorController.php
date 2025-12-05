@@ -324,4 +324,57 @@ class PermintaanDonorController extends Controller
         $permintaan = PermintaanDonor::findOrFail($id);
         return view('dashboard.permintaan-donor.detail', compact('permintaan'));
     }
+
+    public function darahDarurat()
+    {
+        $search = request('search');
+        
+        $permintaanDarurat = PermintaanDarah::where('status', 'Darurat')
+            ->when($search, function($query) use ($search) {
+                $query->where('nama_pasien', 'like', "%{$search}%")
+                    ->orWhere('golongan_darah', 'like', "%{$search}%");
+            })
+            ->latest()
+            ->paginate(10);
+        
+        return view('donor-darurat.index', compact('permintaanDarurat'));
+    }
+
+    public function respondDarurat(Request $request, $id)
+    {
+        try {
+            $permintaan = PermintaanDarah::findOrFail($id);
+            $pendonorId = auth()->user()->pendonor->pendonor_id;
+            
+            // Cek sudah respond atau belum
+            $sudahRespond = $permintaan->responses()
+                ->where('pendonor_id', $pendonorId)
+                ->exists();
+            
+            if ($sudahRespond) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda sudah merespons permintaan ini'
+                ], 400);
+            }
+            
+            // Simpan response
+            $permintaan->responses()->create([
+                'pendonor_id' => $pendonorId,
+                'status' => 'Bersedia',
+                'tanggal_response' => now()
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Terima kasih! Respons Anda telah dikirim'
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

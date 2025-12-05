@@ -50,6 +50,9 @@ public function adminDashboard()
         
         // Permintaan Terpenuhi
         $permintaanTerpenuhi = PermintaanDonor::where('status_permintaan', 'Approved')->count();
+
+         // ✅ Stok Darah (sama dengan kantong terkumpul)
+        $stokDarah = $kantongTerkumpul;
         
         // Data untuk tabel
         $kegiatanTerbaru = KegiatanDonor::orderBy('tanggal', 'desc')->take(5)->get();
@@ -69,6 +72,7 @@ public function adminDashboard()
             'tingkatKeberhasilan',
             'pendonorAktif',
             'permintaanTerpenuhi',
+            'stokDarah',
             'kegiatanTerbaru',
             'permintaanPending'
         ));
@@ -98,6 +102,12 @@ public function adminDashboard()
             (object)[
                 'nama_pasien' => 'Ahmad Hidayat',
                 'golongan_darah' => 'A+',
+                'jumlah_kantong' => 2,
+                'status' => 'Baru'
+            ],
+             (object)[
+                'nama_pasien' => 'Budi Santoso',
+                'golongan_darah' => 'AB+',
                 'jumlah_kantong' => 2,
                 'status' => 'Baru'
             ],
@@ -288,62 +298,5 @@ public function adminDashboard()
         
         return $pdf->download('riwayat-donor-' . $pendonor->nama . '.pdf');
         */
-    }
-     // Halaman Cek Kelayakan Donor
-    public function cekKelayakanDonor()
-    {
-        return view('dashboard.pendonor.cek-kelayakan-donor');
-    }
-
-    // Submit Cek Kelayakan
-    public function submitKelayakan(Request $request)
-    {
-        $request->validate([
-            'answers' => 'required|array',
-            'answers.*' => 'required|in:yes,no'
-        ]);
-
-        $answers = $request->answers;
-        $isEligible = true;
-
-        // Check eligibility
-        // Questions 0-6 should be "no"
-        for ($i = 0; $i <= 6; $i++) {
-            if (isset($answers[$i]) && $answers[$i] === 'yes') {
-                $isEligible = false;
-                break;
-            }
-        }
-
-        // Questions 7-9 should be "yes"
-        for ($i = 7; $i <= 9; $i++) {
-            if (isset($answers[$i]) && $answers[$i] === 'no') {
-                $isEligible = false;
-                break;
-            }
-        }
-        // Optional: Save to database
-        // Uncomment jika ingin menyimpan hasil
-        /*
-        $user = Auth::user();
-        $pendonor = Pendonor::where('user_id', $user->user_id)->first();
-        
-        if ($pendonor) {
-            \App\Models\DonorEligibility::create([
-                'pendonor_id' => $pendonor->pendonor_id,
-                'answers' => json_encode($answers),
-                'is_eligible' => $isEligible,
-                'checked_at' => now()
-            ]);
-        }
-        */
-
-        return response()->json([
-            'success' => true,
-            'eligible' => $isEligible,
-            'message' => $isEligible 
-                ? 'Selamat! Anda memenuhi syarat untuk donor darah.'
-                : 'Maaf, Anda belum memenuhi syarat untuk donor darah.'
-        ]);
     }
 }

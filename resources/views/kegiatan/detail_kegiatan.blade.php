@@ -7,7 +7,15 @@
         
         {{-- Back Button --}}
         <div class="px-4 py-4">
-            <a href="{{ route('kegiatan.index') }}" class="inline-flex items-center text-gray-700 hover:text-gray-900 transition-colors">
+            @auth
+                @if(in_array(auth()->user()->role, ['admin', 'staf']))
+                    <a href="{{ url()->previous() }}" class="inline-flex items-center text-gray-700 hover:text-gray-900 transition-colors">
+                @else
+                    <a href="{{ route('kegiatan.index') }}" class="inline-flex items-center text-gray-700 hover:text-gray-900 transition-colors">
+                @endif
+            @else
+                <a href="{{ route('kegiatan.index') }}" class="inline-flex items-center text-gray-700 hover:text-gray-900 transition-colors">
+            @endauth
                 <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                 </svg>

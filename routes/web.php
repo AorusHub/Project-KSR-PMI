@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\LaporanController;
 use App\Http\Controllers\PendonorController;
 use App\Http\Controllers\StokDarahController;
 use App\Http\Controllers\VerifikasiKelayakanController;
+
 // ...existing code...
 /*
 |--------------------------------------------------------------------------
@@ -110,7 +111,15 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 Route::middleware(['auth', 'role:staf'])->prefix('staf')->name('staf.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'stafDashboard'])->name('dashboard');
 
+    Route::prefix('verifikasi-kelayakan')->name('verifikasi-kelayakan.')->group(function () {
+        Route::get('/', [VerifikasiKelayakanController::class, 'index'])->name('index');
+        Route::get('/{id}', [VerifikasiKelayakanController::class, 'show'])->name('show');
+        Route::post('/{id}/approve', [VerifikasiKelayakanController::class, 'approve'])->name('approve');
+        Route::post('/{id}/reject', [VerifikasiKelayakanController::class, 'reject'])->name('reject');
+    });
 });
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -122,14 +131,14 @@ Route::middleware(['auth', 'role:pendonor'])->prefix('pendonor')->name('pendonor
     Route::get('/riwayat-donor', [DashboardController::class, 'riwayatDonor'])->name('riwayat-donor');
 
     // Cek Kelayakan
-    Route::get('/cek-kelayakan', [DashboardController::class, 'cekKelayakan'])->name('cek-kelayakan');
-    Route::get('/cek-kelayakan-donor', [DashboardController::class, 'cekKelayakanDonor'])->name('cek-kelayakan-donor'); // ✅ TAMBAHKAN INI
-    Route::get('/riwayat-donor/export-pdf', [PendonorController::class, 'exportPdf'])->name('riwayat-donor.export-pdf');
-    Route::post('/cek-kelayakan-donor/submit', [DashboardController::class, 'submitKelayakan'])->name('cek-kelayakan.submit');
+    // ✅ CEK KELAYAKAN - GANTI KE CONTROLLER BARU
+    Route::get('/cek-kelayakan-donor', [VerifikasiKelayakanController::class, 'cekKelayakan'])->name('cek-kelayakan-donor');
+    Route::post('/cek-kelayakan-donor/submit', [VerifikasiKelayakanController::class, 'submitKelayakan'])->name('cek-kelayakan-donor.submit');
 
-    // Butuh Darah Cepat
-    // Route::get('/butuh-darah-cepat', [DashboardController::class, 'butuhDarahCepat'])->name('butuh-darah-cepat');
-
+    Route::get('/permintaan-darah', [PermintaanDonorController::class, 'darahDarurat'])
+        ->name('permintaan-darah');
+    Route::post('/permintaan-darah/{id}/respond', [PermintaanDonorController::class, 'respondDarurat'])
+        ->name('permintaan-darah.respond');
     // Formulir Permintaan Darah
     Route::get('/formulir-permintaan-darah', [PermintaanDonorController::class, 'create'])->name('permintaan-darah.create');
     Route::post('/formulir-permintaan-darah', [PermintaanDonorController::class, 'store'])->name('permintaan-darah.simpan');
@@ -174,21 +183,9 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::prefix('stok-darah')->name('stok-darah.')->group(function () {
-        Route::get('/', [App\Http\Controllers\StokDarahController::class, 'index'])->name('index');
-        Route::post('/update', [App\Http\Controllers\StokDarahController::class, 'update'])->name('update');
+        Route::get('/', [StokDarahController::class, 'index'])->name('index');
+        Route::post('/update', [StokDarahController::class, 'update'])->name('update');
 
-    });
-
-    // ✅ VERIFIKASI KELAYAKAN (Admin & Staf)
-    Route::prefix('verifikasi-kelayakan')->name('verifikasi.')->group(function () {
-        Route::get('/', [App\Http\Controllers\Dashboard\VerifikasiKelayakanController::class, 'index'])
-            ->name('kelayakan.index');
-        Route::get('/{id}', [App\Http\Controllers\Dashboard\VerifikasiKelayakanController::class, 'show'])
-            ->name('kelayakan.show');
-        Route::post('/{id}/approve', [App\Http\Controllers\Dashboard\VerifikasiKelayakanController::class, 'approve'])
-            ->name('kelayakan.approve');
-        Route::post('/{id}/reject', [App\Http\Controllers\Dashboard\VerifikasiKelayakanController::class, 'reject'])
-            ->name('kelayakan.reject');
     });
     // ✅ DONOR DARURAT (untuk Pendonor merespons)
     Route::prefix('donor-darurat')->name('donor-darurat.')->group(function () {

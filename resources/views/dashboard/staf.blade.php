@@ -100,7 +100,7 @@
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                     <div class="flex items-center justify-between">
                         <h4 class="text-lg font-bold text-gray-900">Cek Kelayakan</h4>
-                        <a href="{{ route('verifikasi.kelayakan.index') }}" class="text-sm text-gray-600 hover:text-gray-900 font-medium">Lihat</a>
+                        <a href="{{ route('staf.verifikasi-kelayakan.index') }}" class="text-sm text-gray-600 hover:text-gray-900 font-medium">Lihat</a>
                     </div>
                 </div>
 
@@ -137,7 +137,7 @@
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
-                                @forelse($permintaanTerbaru as $permintaan)
+                                @forelse($permintaanTerbaru->take(5) as $permintaan)
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $permintaan->nama_pasien }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $permintaan->golongan_darah }}</td>

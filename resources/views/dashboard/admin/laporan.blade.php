@@ -104,13 +104,15 @@
                 </div>
                 
                 <div class="flex items-center justify-center mb-6" style="height: 280px;">
-                    <canvas id="chartGolonganDarah"></canvas>
-                    <div id="emptyGoldarChart" class="hidden relative w-52 h-52">
-                        <svg viewBox="0 0 100 100" class="w-full h-full">
-                            <circle cx="50" cy="50" r="40" fill="none" stroke="#d1d5db" stroke-width="20"/>
-                        </svg>
-                        <div class="absolute inset-0 flex items-center justify-center">
-                            <span class="text-sm text-gray-400">0%</span>
+                    <div class="relative w-full h-full flex items-center justify-center">
+                        <canvas id="chartGolonganDarah"></canvas>
+                        <div id="emptyGoldarChart" class="hidden absolute">
+                            <svg viewBox="0 0 100 100" class="w-52 h-52">
+                                <circle cx="50" cy="50" r="40" fill="none" stroke="#d1d5db" stroke-width="20"/>
+                            </svg>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <span class="text-sm text-gray-400">0%</span>
+                            </div>
                         </div>
                     </div>
                 </div>

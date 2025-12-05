@@ -82,7 +82,7 @@
         </div>
 
         {{-- Stats Cards Row 2 --}}
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
             
             {{-- Tingkat Keberhasilan --}}
             <div class="bg-white rounded-lg shadow-md p-6">
@@ -130,6 +130,20 @@
                 </div>
             </div>
 
+            {{-- Stok Darah --}}
+            <a href="{{ route('stok-darah.index') }}" class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow block">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                        <svg class="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Stok Darah</p>
+                        <h3 class="text-2xl font-bold text-gray-900">{{ number_format($stokDarah ?? 5247) }}</h3>
+                    </div>
+                </div>
+            </a>
         </div>
 
         {{-- Management Cards --}}
@@ -151,7 +165,7 @@
             {{-- Manajemen Permintaan --}}
             <a href="" class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
                 <div class="text-center">
-                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 flex-shrink-0">
                         <svg class="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
                             <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>

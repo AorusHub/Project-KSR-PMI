@@ -36,4 +36,53 @@ class Pendonor extends Model
     {
         return $this->hasMany(DonasiDarah::class, 'pendonor_id', 'pendonor_id');
     }
+
+    // ✅ RELASI KE VERIFIKASI KELAYAKAN
+    public function verifikasiKelayakan()
+    {
+        return $this->hasMany(VerifikasiKelayakan::class, 'pendonor_id', 'pendonor_id');
+    }
+
+    // ✅ GET VERIFIKASI TERBARU
+    public function verifikasiTerbaru()
+    {
+        return $this->hasOne(VerifikasiKelayakan::class, 'pendonor_id', 'pendonor_id')
+            ->latest('created_at');
+    }
+
+    // ✅ HELPER METHOD CEK KELAYAKAN
+    public function isLayakDonor()
+    {
+        $verifikasiTerbaru = $this->verifikasiTerbaru;
+        
+        if (!$verifikasiTerbaru) {
+            return false; // Belum pernah verifikasi
+        }
+
+        // Cek apakah verifikasi terakhir statusnya "Layak"
+        if ($verifikasiTerbaru->status_kelayakan !== 'Layak') {
+            return false;
+        }
+
+        // Cek apakah verifikasi masih berlaku (misalnya 3 bulan)
+        $expiredDate = $verifikasiTerbaru->verified_at?->addMonths(3);
+        
+        if (!$expiredDate || now()->gt($expiredDate)) {
+            return false; // Verifikasi sudah expired
+        }
+
+        return true;
+    }
+
+    // ✅ GET STATUS KELAYAKAN TERKINI
+    public function getStatusKelayakan()
+    {
+        $verifikasiTerbaru = $this->verifikasiTerbaru;
+        
+        if (!$verifikasiTerbaru) {
+            return 'Belum Verifikasi';
+        }
+
+        return $verifikasiTerbaru->status_kelayakan;
+    }
 }
