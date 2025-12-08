@@ -202,14 +202,26 @@ public function adminDashboard()
     
 
     // Halaman Riwayat Donor (Detail)
-    public function riwayatDonor()
+    public function riwayatDonor($id = null)
     {
         $user = Auth::user();
-        $pendonor = Pendonor::where('user_id', $user->user_id)->first();
         
-        if (!$pendonor) {
-            return redirect()->route('pendonor.dashboard')
-                ->with('error', 'Data pendonor tidak ditemukan.');
+        // ✅ Jika admin mengakses dengan ID pendonor tertentu
+        if ($user->role === 'admin' && $id) {
+            $pendonor = Pendonor::findOrFail($id);
+        } 
+        // ✅ Jika pendonor login, ambil data sendiri (tidak pakai ID)
+        elseif ($user->role === 'pendonor') {
+            $pendonor = Pendonor::where('user_id', $user->user_id)->first();
+            
+            if (!$pendonor) {
+                return redirect()->route('pendonor.dashboard')
+                    ->with('error', 'Data pendonor tidak ditemukan.');
+            }
+        } 
+        // ✅ Role lain tidak boleh akses
+        else {
+            abort(403, 'Unauthorized access.');
         }
         
         // Ambil semua riwayat donasi dengan relasi kegiatan
@@ -239,7 +251,7 @@ public function adminDashboard()
         
         // Total volume darah yang didonasikan (ml)
         $totalVolume = DonasiDarah::where('pendonor_id', $pendonor->pendonor_id)
-            ->where('status_donasi', 'Selesai')
+            ->where('status_donasi', 'Berhasil')
             ->sum('volume_darah');
         
         return view('dashboard.pendonor.riwayat-donor', compact(
@@ -254,15 +266,27 @@ public function adminDashboard()
         ));
     }
 
-    // Export PDF Riwayat Donor
-    public function exportPDF()
+    // ✅ Export PDF Riwayat Donor - SUPPORT ADMIN & PENDONOR
+    public function exportPDF($id = null)
     {
         $user = Auth::user();
-        $pendonor = Pendonor::where('user_id', $user->user_id)->first();
         
-        if (!$pendonor) {
-            return redirect()->route('pendonor.dashboard')
-                ->with('error', 'Data pendonor tidak ditemukan.');
+        // ✅ Jika admin mengakses dengan ID pendonor tertentu
+        if ($user->role === 'admin' && $id) {
+            $pendonor = Pendonor::findOrFail($id);
+        } 
+        // ✅ Jika pendonor login, ambil data sendiri
+        elseif ($user->role === 'pendonor') {
+            $pendonor = Pendonor::where('user_id', $user->user_id)->first();
+            
+            if (!$pendonor) {
+                return redirect()->route('pendonor.dashboard')
+                    ->with('error', 'Data pendonor tidak ditemukan.');
+            }
+        } 
+        // ✅ Role lain tidak boleh akses
+        else {
+            abort(403, 'Unauthorized access.');
         }
         
         $riwayatDonasi = DonasiDarah::where('pendonor_id', $pendonor->pendonor_id)
@@ -271,7 +295,7 @@ public function adminDashboard()
             ->get();
         
         $totalBerhasil = DonasiDarah::where('pendonor_id', $pendonor->pendonor_id)
-            ->where('status_donasi', 'Selesai')
+            ->where('status_donasi', 'Berhasil')
             ->count();
         
         $nyawaTerselamatkan = $totalBerhasil * 3;

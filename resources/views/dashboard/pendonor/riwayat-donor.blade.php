@@ -9,12 +9,23 @@
         
         {{-- Back Button --}}
         <div class="mb-6">
-            <a href="{{ route('pendonor.dashboard') }}" class="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                </svg>
-                <span class="font-medium">Kembali ke Dashboard</span>
-            </a>
+            @if(auth()->user()->role === 'admin')
+                {{-- Admin kembali ke detail user management --}}
+                <a href="{{ route('admin.users.riwayat', $pendonor->pendonor_id) }}" class="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                    <span class="font-medium">Kembali ke Detail Pengguna</span>
+                </a>
+            @else
+                {{-- Pendonor kembali ke dashboard --}}
+                <a href="{{ route('pendonor.dashboard') }}" class="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                    <span class="font-medium">Kembali ke Dashboard</span>
+                </a>
+            @endif
         </div>
 
         {{-- Header --}}
@@ -178,23 +189,25 @@
         </div>
 
         {{-- Motivational Banner --}}
+    @if(auth()->check() && auth()->user()->pendonor)
         @if($riwayatDonasi->count() > 0)
-        <div class="mt-8 bg-gradient-to-r from-red-600 to-red-700 rounded-xl shadow-lg p-8 text-white text-center">
-            <h3 class="text-2xl font-bold mb-2">Terima Kasih atas Dedikasi Anda!</h3>
-            <p class="text-red-100 mb-6">
-                Setiap tetes darah yang Anda donasikan adalah hadiah kehidupan bagi mereka yang membutuhkan. 
-                <br>Anda telah menunjukkan kepedulian luar biasa kepada sesama.
-            </p>
-            <div class="flex flex-wrap justify-center gap-4">
-                <a href="{{ route('pendonor.dashboard') }}" class="px-6 py-3 bg-white text-red-600 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
-                    Donor Lagi
-                </a>
-                <a href="{{ route('pendonor.cek-kelayakan') }}" class="px-6 py-3 bg-transparent border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-red-600 transition-colors">
-                    Cek Kelayakan
-                </a>
+            <div class="mt-8 bg-gradient-to-r from-red-600 to-red-700 rounded-xl shadow-lg p-8 text-white text-center">
+                <h3 class="text-2xl font-bold mb-2">Terima Kasih atas Dedikasi Anda!</h3>
+                <p class="text-red-100 mb-6">
+                    Setiap tetes darah yang Anda donasikan adalah hadiah kehidupan bagi mereka yang membutuhkan. 
+                    <br>Anda telah menunjukkan kepedulian luar biasa kepada sesama.
+                </p>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <a href="{{ route('pendonor.dashboard') }}" class="px-6 py-3 bg-white text-red-600 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+                        Donor Lagi
+                    </a>
+                    <a href="{{ route('pendonor.cek-kelayakan-donor') }}" class="px-6 py-3 bg-transparent border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-red-600 transition-colors">
+                        Cek Kelayakan
+                    </a>
+                </div>
             </div>
-        </div>
         @endif
+    @endif
 
     </div>
 </div>

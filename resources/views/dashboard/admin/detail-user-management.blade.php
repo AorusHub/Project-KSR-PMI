@@ -6,25 +6,23 @@
 <div class="min-h-screen bg-gray-50 py-8">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {{-- Back Button & Header in One Row --}}
-        <div class="mb-8 flex items-center justify-between">
-            <div>
-                <a href="{{ route('admin.users.index') }}" class="inline-flex items-center text-gray-700 hover:text-gray-900 transition-colors mb-4">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                    </svg>
-                    <span class="font-medium">Kembali ke Manajemen Pengguna</span>
-                </a>
-                <h1 class="text-3xl font-bold text-gray-900">Riwayat Donasi</h1>
-                <p class="text-gray-600 mt-1">Melihat riwayat donasi oleh pengguna</p>
-            </div>
-        </div>
-
         {{-- Main Grid Layout --}}
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
-            {{-- LEFT COLUMN: STATS CARDS --}}
+            {{-- LEFT COLUMN: HEADER & STATS CARDS --}}
             <div class="lg:col-span-1 space-y-6">
+                
+                {{-- Header Section --}}
+                <div>
+                    <a href="{{ route('admin.users.index') }}" class="inline-flex items-center text-gray-700 hover:text-gray-900 transition-colors mb-4">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                        <span class="font-medium">Kembali ke Manajemen Pengguna</span>
+                    </a>
+                    <h1 class="text-3xl font-bold text-gray-900">Riwayat Donasi</h1>
+                    <p class="text-gray-600 mt-1">Melihat riwayat donasi oleh pengguna</p>
+                </div>
                 
                 {{-- Total Donasi Card --}}
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -87,6 +85,16 @@
                     </div>
                 </div>
 
+                {{-- Tombol Hapus Akun --}}
+                <form action="{{ route('admin.users.destroy', $pendonor->pendonor_id) }}" method="POST" id="deleteForm">
+                    @csrf
+                    @method('DELETE')
+                    <button type="button" onclick="showDeleteConfirmation()" 
+                        class="w-full bg-red-600 text-white py-4 rounded-xl font-bold hover:bg-red-700 transition-colors shadow-sm">
+                        HAPUS AKUN
+                    </button>
+                </form>
+
             </div>
 
             {{-- RIGHT COLUMN: PROFILE & HISTORY --}}
@@ -123,7 +131,7 @@
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                     <div class="flex items-center justify-between mb-6">
                         <h2 class="text-lg font-bold text-gray-900">Riwayat Donasi</h2>
-                        <button class="text-sm text-red-600 hover:text-red-700 font-semibold">Lihat Detail</button>
+                        <a href="{{ route('admin.users.riwayat-lengkap', $pendonor->pendonor_id) }}" class="text-sm text-red-600 hover:text-red-700 font-semibold">Lihat Detail</a>
                     </div>
 
                     {{-- Table --}}
@@ -138,7 +146,7 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100">
-                                @forelse($pendonor->donasiDarah->sortByDesc('tanggal_donasi') as $donasi)
+                                @forelse($pendonor->donasiDarah->sortByDesc('tanggal_donasi')->take(3) as $donasi)
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-6 py-4 text-sm text-gray-900">
                                         {{ \Carbon\Carbon::parse($donasi->tanggal_donasi)->format('d/m/Y') }}
@@ -181,4 +189,124 @@
 
     </div>
 </div>
+
+{{-- Delete Confirmation Modal --}}
+<div id="deleteModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 relative animate-fadeIn">
+        {{-- Close Button --}}
+        <button onclick="closeDeleteModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </button>
+
+        {{-- Icon --}}
+        <div class="flex justify-center mb-6">
+            <div class="w-24 h-24 rounded-full border-4 border-gray-300 flex items-center justify-center">
+                <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+        </div>
+
+        {{-- Title --}}
+        <h3 class="text-center text-xl font-bold text-gray-900 mb-4">
+            Hapus Akun: <span class="font-bold">{{ $pendonor->nama }}</span>
+        </h3>
+
+        {{-- Message --}}
+        <p class="text-center text-gray-700 mb-2 font-semibold">
+            Apakah Anda yakin ingin menghapus akun ini?
+        </p>
+        <p class="text-center text-gray-600 text-sm mb-8">
+            Anda tidak dapat mengembalikan akun setelah dihapus
+        </p>
+
+        {{-- Action Buttons --}}
+        <div class="grid grid-cols-2 gap-4">
+            <button onclick="confirmDeleteUser()" 
+                class="px-6 py-3 bg-white border-2 border-green-500 text-green-600 rounded-lg font-bold hover:bg-green-50 transition-colors">
+                Iya
+            </button>
+            <button onclick="closeDeleteModal()" 
+                class="px-6 py-3 bg-white border-2 border-red-500 text-red-600 rounded-lg font-bold hover:bg-red-50 transition-colors">
+                Tidak
+            </button>
+        </div>
+    </div>
+</div>
+
+{{-- Success Modal --}}
+<div id="successModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center animate-fadeIn">
+        {{-- Success Icon --}}
+        <div class="flex justify-center mb-6">
+            <div class="w-24 h-24 rounded-full bg-green-100 flex items-center justify-center">
+                <svg class="w-12 h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                </svg>
+            </div>
+        </div>
+
+        {{-- Message --}}
+        <h3 class="text-2xl font-bold text-gray-900 mb-3">Berhasil!</h3>
+        <p class="text-gray-600 mb-8">Akun berhasil dihapus</p>
+
+        {{-- Loading indicator --}}
+        <p class="text-sm text-gray-500">Mengalihkan ke halaman manajemen pengguna...</p>
+    </div>
+</div>
+
+@push('styles')
+<style>
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+    .animate-fadeIn {
+        animation: fadeIn 0.2s ease-out;
+    }
+</style>
+@endpush
+
+@push('scripts')
+<script>
+// Show delete confirmation modal
+function showDeleteConfirmation() {
+    document.getElementById('deleteModal').classList.remove('hidden');
+}
+
+// Close delete modal
+function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.add('hidden');
+}
+
+// Confirm delete and submit form
+function confirmDeleteUser() {
+    // Close confirmation modal
+    document.getElementById('deleteModal').classList.add('hidden');
+    
+    // Show success modal immediately
+    document.getElementById('successModal').classList.remove('hidden');
+    
+    // Submit form after showing success modal
+    setTimeout(function() {
+        document.getElementById('deleteForm').submit();
+    }, 1500);
+}
+
+// Close modal when clicking outside
+document.getElementById('deleteModal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeDeleteModal();
+    }
+});
+</script>
+@endpush
 @endsection

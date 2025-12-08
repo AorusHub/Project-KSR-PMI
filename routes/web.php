@@ -90,6 +90,10 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         Route::get('/', [UserManagementController::class, 'index'])->name('index');
         Route::get('/{id}/riwayat', [UserManagementController::class, 'riwayatDonasi'])->name('riwayat');
         Route::delete('/{id}', [UserManagementController::class, 'destroy'])->name('destroy');
+        Route::get('/{id}/riwayat-lengkap', [DashboardController::class, 'riwayatDonor'])->name('riwayat-lengkap');
+        Route::get('/{id}/export-pdf', [DashboardController::class, 'exportPDF'])->name('export-pdf');
+        Route::delete('/{id}', [UserManagementController::class, 'destroy'])->name('destroy');
+   
     });
 
     Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
@@ -129,6 +133,7 @@ Route::middleware(['auth', 'role:staf'])->prefix('staf')->name('staf.')->group(f
 Route::middleware(['auth', 'role:pendonor'])->prefix('pendonor')->name('pendonor.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'pendonorDashboard'])->name('dashboard');
     Route::get('/riwayat-donor', [DashboardController::class, 'riwayatDonor'])->name('riwayat-donor');
+    Route::get('/riwayat-donor/export-pdf', [DashboardController::class, 'exportPDF'])->name('riwayat-donor.export-pdf');
 
     // Cek Kelayakan
     // ✅ CEK KELAYAKAN - GANTI KE CONTROLLER BARU
