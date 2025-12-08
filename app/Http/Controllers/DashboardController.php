@@ -300,27 +300,27 @@ public function adminDashboard()
         
         $nyawaTerselamatkan = $totalBerhasil * 3;
         
-        // TODO: Implement PDF export using barryvdh/laravel-dompdf
-        // Install: composer require barryvdh/laravel-dompdf
+        // ✅ Total volume darah
+        $totalVolume = DonasiDarah::where('pendonor_id', $pendonor->pendonor_id)
+            ->where('status_donasi', 'Berhasil')
+            ->sum('volume_darah');
         
-        // Untuk sementara, return JSON
-        return response()->json([
-            'message' => 'Export PDF feature will be available soon',
-            'pendonor' => $pendonor->nama,
-            'total_donasi' => $totalBerhasil,
-            'nyawa_terselamatkan' => $nyawaTerselamatkan,
-        ]);
+        // ✅ Hitung persentase keberhasilan
+        $totalDonasi = $riwayatDonasi->count();
+        $persentaseKeberhasilan = $totalDonasi > 0 ? round(($totalBerhasil / $totalDonasi) * 100) : 0;
         
-        // Setelah install DomPDF, uncomment code berikut:
-        /*
-        $pdf = \PDF::loadView('dashboard.pendonor.riwayat-pdf', compact(
+        // ✅ Generate PDF
+        $pdf = \PDF::loadView('dashboard.pendonor.riwayat-donor-pdf', compact(
             'pendonor',
             'riwayatDonasi',
             'totalBerhasil',
-            'nyawaTerselamatkan'
+            'nyawaTerselamatkan',
+            'totalVolume',
+            'persentaseKeberhasilan'
         ));
         
-        return $pdf->download('riwayat-donor-' . $pendonor->nama . '.pdf');
-        */
+        $filename = 'riwayat-donor-' . \Str::slug($pendonor->nama) . '-' . date('Y-m-d') . '.pdf';
+        
+        return $pdf->download($filename);
     }
 }
