@@ -1,4 +1,4 @@
-{{-- filepath: c:\xampp\htdocs\ksr-pmi\Project-KSR-PMI\resources\views\pendonor\permintaan-darah.blade.php --}}
+{{-- filepath: c:\xampp\htdocs\ksr-pmi\Project-KSR-PMI\resources\views\dashboard\pendonor\permintaan-darah.blade.php --}}
 @extends('layouts.app')
 
 @section('title', 'Permintaan Darah Darurat')
@@ -49,7 +49,7 @@
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
-                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Pengguna</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Pasien</th>
                             <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gol. Darah</th>
                             <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah</th>
                             <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rumah Sakit</th>
@@ -68,42 +68,41 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="px-3 py-1 text-sm font-bold rounded-full
-                                    @if($permintaan->golongan_darah == 'A+') bg-red-100 text-red-700
-                                    @elseif($permintaan->golongan_darah == 'O+') bg-orange-100 text-orange-700
-                                    @elseif($permintaan->golongan_darah == 'B+') bg-blue-100 text-blue-700
+                                    @if($permintaan->gol_darah == 'A+') bg-red-100 text-red-700
+                                    @elseif($permintaan->gol_darah == 'O+') bg-orange-100 text-orange-700
+                                    @elseif($permintaan->gol_darah == 'B+') bg-blue-100 text-blue-700
+                                    @elseif($permintaan->gol_darah == 'AB+') bg-purple-100 text-purple-700
+                                    @elseif($permintaan->gol_darah == 'A-') bg-red-100 text-red-700
+                                    @elseif($permintaan->gol_darah == 'O-') bg-orange-100 text-orange-700
+                                    @elseif($permintaan->gol_darah == 'B-') bg-blue-100 text-blue-700
                                     @else bg-purple-100 text-purple-700
                                     @endif">
-                                    {{ $permintaan->golongan_darah }}
+                                    {{ $permintaan->gol_darah }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {{ $permintaan->jumlah_kantong }} Kantong
                             </td>
                             <td class="px-6 py-4 text-sm text-gray-900">
-                                {{ $permintaan->nama_rs }}
+                                {{ $permintaan->tempat_rawat }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="px-3 py-1 text-xs font-semibold rounded-full
-                                    @if($permintaan->tingkat_urgensi == 'Mendesak') bg-red-100 text-red-800
-                                    @elseif($permintaan->tingkat_urgensi == 'Sedang') bg-yellow-100 text-yellow-800
+                                    @if($permintaan->tingkat_urgensi == 'Sangat Mendesak') bg-red-100 text-red-800
+                                    @elseif($permintaan->tingkat_urgensi == 'Mendesak') bg-yellow-100 text-yellow-800
                                     @else bg-green-100 text-green-800
                                     @endif">
                                     {{ $permintaan->tingkat_urgensi }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                @php
-                                    $sudahRespond = $permintaan->responses()
-                                        ->where('pendonor_id', auth()->user()->pendonor->pendonor_id)
-                                        ->exists();
-                                @endphp
-                                
-                                @if($sudahRespond)
+                                {{-- ✅ CEK apakah sudah ada yang respond --}}
+                                @if($permintaan->nama_pendonor_respond)
                                     <span class="px-4 py-2 text-sm font-semibold text-gray-500 bg-gray-100 rounded-lg cursor-not-allowed">
-                                        ✓ Sudah Merespons
+                                        ✓ Sudah Direspons
                                     </span>
                                 @else
-                                    <button onclick="showModal({{ $permintaan->permintaan_id }}, '{{ $permintaan->nama_pasien }}', '{{ $permintaan->golongan_darah }}', {{ $permintaan->jumlah_kantong }})" 
+                                    <button onclick="showModal({{ $permintaan->permintaan_id }}, '{{ $permintaan->nama_pasien }}', '{{ $permintaan->gol_darah }}', {{ $permintaan->jumlah_kantong }})" 
                                             class="px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors">
                                         Donor Sekarang
                                     </button>
@@ -168,16 +167,53 @@
                 </div>
             </div>
             
-            <p class="text-sm text-gray-600 mb-6">Apakah Anda bersedia mendonorkan darah untuk pasien ini?</p>
-            
-            <form id="formDonor" method="POST" class="flex gap-3">
+            {{-- ✅ FORM INPUT DATA PENDONOR --}}
+            <form id="formDonor" method="POST" class="space-y-4 mb-6 text-left">
                 @csrf
-                <button type="button" onclick="closeModal()" class="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors">
-                    Batal
-                </button>
-                <button type="submit" class="flex-1 px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors">
-                    Ya, Saya Bersedia
-                </button>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nama Lengkap</label>
+                    <input type="text" name="nama_pendonor" required
+                           value="{{ auth()->user()->pendonor->nama ?? '' }}"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                           placeholder="Masukkan nama lengkap">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Lahir</label>
+                    <input type="date" name="tgl_lahir" required
+                           value="{{ auth()->user()->pendonor->tanggal_lahir ?? '' }}"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Golongan Darah</label>
+                    <select name="gol_darah" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                        <option value="">Pilih Golongan Darah</option>
+                        @foreach(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] as $gol)
+                            <option value="{{ $gol }}" {{ (auth()->user()->pendonor->golongan_darah ?? '') == $gol ? 'selected' : '' }}>
+                                {{ $gol }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">No. Telepon</label>
+                    <input type="tel" name="no_telp" required
+                           value="{{ auth()->user()->pendonor->no_hp ?? '' }}"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                           placeholder="08xxxxxxxxxx">
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closeModal()" class="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors">
+                        Batal
+                    </button>
+                    <button type="submit" class="flex-1 px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors">
+                        Ya, Saya Bersedia
+                    </button>
+                </div>
             </form>
         </div>
     </div>
@@ -222,9 +258,13 @@ function closeModal() {
     document.getElementById('modalDonor').classList.remove('flex');
 }
 
-// Handle form submit
+// ✅ Handle form submit dengan FormData
 document.getElementById('formDonor').addEventListener('submit', function(e) {
     e.preventDefault();
+    
+    const formData = new FormData(this);
+    const jsonData = {};
+    formData.forEach((value, key) => jsonData[key] = value);
     
     fetch(this.action, {
         method: 'POST',
@@ -232,7 +272,8 @@ document.getElementById('formDonor').addEventListener('submit', function(e) {
             'Content-Type': 'application/json',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
             'Accept': 'application/json'
-        }
+        },
+        body: JSON.stringify(jsonData)
     })
     .then(response => response.json())
     .then(data => {

@@ -12,7 +12,7 @@ return new class extends Migration
         Schema::create('permintaan_donor', function (Blueprint $table) {
             $table->id('permintaan_id');
             
-            // ✅ Tambahkan nomor_pelacakan
+            // ✅ Nomor pelacakan
             $table->string('nomor_pelacakan', 20)->unique();
             
             $table->date('tanggal_hari');
@@ -20,7 +20,7 @@ return new class extends Migration
             $table->enum('gol_darah', ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']);
             $table->integer('jumlah_kantong');
             
-            // Field baru
+            // Field permintaan
             $table->text('riwayat')->nullable();
             $table->string('tempat_rawat');
             $table->enum('jenis_permintaan', [
@@ -38,7 +38,22 @@ return new class extends Migration
             
             // Field lama (backwards compatibility)
             $table->string('kontak_keluarga')->nullable();
-            $table->enum('status_permintaan', ['Pending', 'Approved', 'Completed', 'Rejected'])->default('Pending');
+            $table->enum('status_permintaan', [
+                'Pending', 
+                'Approved',
+                'Failed',
+                'Completed', 
+                'Rejected', 
+                'Requesting',
+                'Responded'
+            ])->default('Pending');
+    
+            // ✅ DATA PENDONOR YANG MERESPONS
+            $table->string('nama_pendonor_respond')->nullable();
+            $table->date('tgl_lahir_pendonor')->nullable();
+            $table->string('gol_darah_pendonor', 10)->nullable();
+            $table->string('no_telp_pendonor', 15)->nullable();
+            $table->timestamp('tanggal_respond')->nullable();
             
             $table->timestamps();
         });

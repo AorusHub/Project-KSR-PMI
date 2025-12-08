@@ -325,52 +325,87 @@ class PermintaanDonorController extends Controller
         return view('dashboard.permintaan-donor.detail', compact('permintaan'));
     }
 
-    public function darahDarurat()
+    /**
+     * ✅ Tampilkan daftar permintaan darah darurat (untuk pendonor)
+     */
+    public function darahDarurat(Request $request)
     {
-        $search = request('search');
+        $search = $request->input('search');
         
-        $permintaanDarurat = PermintaanDarah::where('status', 'Darurat')
+        // ✅ Query permintaan darah dengan status "Requesting" 
+        $permintaanDarurat = PermintaanDonor::where('status_permintaan', 'Requesting')
             ->when($search, function($query) use ($search) {
                 $query->where('nama_pasien', 'like', "%{$search}%")
-                    ->orWhere('golongan_darah', 'like', "%{$search}%");
+                    ->orWhere('gol_darah', 'like', "%{$search}%")
+                    ->orWhere('nomor_pelacakan', 'like', "%{$search}%");
             })
-            ->latest()
+            ->orderByRaw("FIELD(tingkat_urgensi, 'Sangat Mendesak', 'Mendesak', 'Normal')")
+            ->orderBy('created_at', 'desc')
             ->paginate(10);
         
-        return view('donor-darurat.index', compact('permintaanDarurat'));
+        return view('dashboard.pendonor.permintaan-darah', compact('permintaanDarurat'));
     }
 
+    /**
+     * ✅ Respond permintaan darah darurat (pendonor)
+     */
     public function respondDarurat(Request $request, $id)
     {
         try {
-            $permintaan = PermintaanDarah::findOrFail($id);
-            $pendonorId = auth()->user()->pendonor->pendonor_id;
+            $permintaan = PermintaanDonor::findOrFail($id);
+            $pendonor = auth()->user()->pendonor;
             
-            // Cek sudah respond atau belum
-            $sudahRespond = $permintaan->responses()
-                ->where('pendonor_id', $pendonorId)
-                ->exists();
-            
-            if ($sudahRespond) {
+            if (!$pendonor) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Anda sudah merespons permintaan ini'
+                    'message' => 'Anda tidak memiliki akses sebagai pendonor'
+                ], 403);
+            }
+            
+            // ✅ CEK apakah permintaan ini sudah direspond
+            if ($permintaan->nama_pendonor_respond) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Permintaan ini sudah direspons oleh pendonor lain'
                 ], 400);
             }
             
-            // Simpan response
-            $permintaan->responses()->create([
-                'pendonor_id' => $pendonorId,
-                'status' => 'Bersedia',
-                'tanggal_response' => now()
+            // ✅ Validasi input
+            $validated = $request->validate([
+                'nama_pendonor' => 'required|string|max:255',
+                'tgl_lahir' => 'required|date',
+                'gol_darah' => 'required|string|in:A+,A-,B+,B-,AB+,AB-,O+,O-',
+                'no_telp' => 'required|string|min:10|max:15'
+            ]);
+            
+            // ✅ UPDATE permintaan dengan data pendonor yang merespons
+            $permintaan->update([
+                'nama_pendonor_respond' => $validated['nama_pendonor'],
+                'tgl_lahir_pendonor' => $validated['tgl_lahir'],
+                'gol_darah_pendonor' => $validated['gol_darah'],
+                'no_telp_pendonor' => $validated['no_telp'],
+                'tanggal_respond' => now(),
+                'status_permintaan' => 'Responded' // Update status
             ]);
             
             return response()->json([
                 'success' => true,
-                'message' => 'Terima kasih! Respons Anda telah dikirim'
+                'message' => 'Terima kasih! Respons Anda telah berhasil dikirim. Tim kami akan segera menghubungi Anda.'
             ]);
             
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $e->errors()
+            ], 422);
+            
         } catch (\Exception $e) {
+            \Log::error('Error respond permintaan darurat:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()

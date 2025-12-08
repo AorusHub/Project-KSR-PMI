@@ -139,16 +139,38 @@
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @forelse($permintaanTerbaru->take(5) as $permintaan)
                                 <tr class="hover:bg-gray-50">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $permintaan->nama_pasien }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $permintaan->golongan_darah }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $permintaan->jumlah_kantong }} Kantong</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {{ $permintaan->nama_pasien }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-3 py-1 text-xs font-bold rounded-full
+                                            @if($permintaan->gol_darah == 'A+') bg-red-100 text-red-700
+                                            @elseif($permintaan->gol_darah == 'O+') bg-orange-100 text-orange-700
+                                            @elseif($permintaan->gol_darah == 'B+') bg-blue-100 text-blue-700
+                                            @elseif($permintaan->gol_darah == 'AB+') bg-purple-100 text-purple-700
+                                            @elseif($permintaan->gol_darah == 'A-') bg-red-100 text-red-700
+                                            @elseif($permintaan->gol_darah == 'O-') bg-orange-100 text-orange-700
+                                            @elseif($permintaan->gol_darah == 'B-') bg-blue-100 text-blue-700
+                                            @else bg-purple-100 text-purple-700
+                                            @endif">
+                                            {{ $permintaan->gol_darah }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {{ $permintaan->jumlah_kantong }} Kantong
+                                    </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span class="px-3 py-1 text-xs font-semibold rounded-full 
-                                            @if($permintaan->status == 'Baru') bg-blue-100 text-blue-800
-                                            @elseif($permintaan->status == 'Diproses') bg-yellow-100 text-yellow-800
-                                            @else bg-green-100 text-green-800
+                                            @if($permintaan->status_permintaan == 'Pending') bg-yellow-100 text-yellow-800
+                                            @elseif($permintaan->status_permintaan == 'Approved') bg-blue-100 text-blue-800
+                                            @elseif($permintaan->status_permintaan == 'Completed') bg-green-100 text-green-800
+                                            @else bg-red-100 text-red-800
                                             @endif">
-                                            {{ $permintaan->status }}
+                                            @if($permintaan->status_permintaan == 'Pending') Menunggu
+                                            @elseif($permintaan->status_permintaan == 'Approved') Disetujui
+                                            @elseif($permintaan->status_permintaan == 'Completed') Selesai
+                                            @else {{ $permintaan->status_permintaan }}
+                                            @endif
                                         </span>
                                     </td>
                                 </tr>

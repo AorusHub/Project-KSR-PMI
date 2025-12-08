@@ -142,8 +142,8 @@ Route::middleware(['auth', 'role:pendonor'])->prefix('pendonor')->name('pendonor
 
     Route::get('/permintaan-darah', [PermintaanDonorController::class, 'darahDarurat'])
         ->name('permintaan-darah');
-    Route::post('/permintaan-darah/{id}/respond', [PermintaanDonorController::class, 'respondDarurat'])
-        ->name('permintaan-darah.respond');
+    Route::get('/permintaan-darah', [PermintaanDonorController::class, 'darahDarurat'])->name('permintaan-darah');
+    Route::post('/permintaan-darah/{id}/respond', [PermintaanDonorController::class, 'respondDarurat'])->name('permintaan-darah.respond');
     // Formulir Permintaan Darah
     Route::get('/formulir-permintaan-darah', [PermintaanDonorController::class, 'create'])->name('permintaan-darah.create');
     Route::post('/formulir-permintaan-darah', [PermintaanDonorController::class, 'store'])->name('permintaan-darah.simpan');

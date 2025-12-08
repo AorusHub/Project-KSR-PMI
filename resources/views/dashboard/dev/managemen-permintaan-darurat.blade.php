@@ -73,10 +73,12 @@
                             onchange="this.form.submit()"
                             class="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
                         <option value="">Semua Status</option>
-                        <option value="Pending" {{ request('status') == 'Pending' ? 'selected' : '' }}>Baru</option>
-                        <option value="Approved" {{ request('status') == 'Approved' ? 'selected' : '' }}>Diproses</option>
-                        <option value="Completed" {{ request('status') == 'Completed' ? 'selected' : '' }}>Terpenuhi</option>
-                        <option value="Rejected" {{ request('status') == 'Rejected' ? 'selected' : '' }}>Ditolak</option>
+                        <option value="Requesting" {{ request('status') == 'Requesting' ? 'selected' : '' }}>Requesting</option>
+                        <option value="Responded" {{ request('status') == 'Responded' ? 'selected' : '' }}>Responded</option>
+                        <option value="Pending" {{ request('status') == 'Pending' ? 'selected' : '' }}>Pending</option>
+                        <option value="Approved" {{ request('status') == 'Approved' ? 'selected' : '' }}>Approved</option>
+                        <option value="Completed" {{ request('status') == 'Completed' ? 'selected' : '' }}>Completed</option>
+                        <option value="Rejected" {{ request('status') == 'Rejected' ? 'selected' : '' }}>Rejected</option>
                     </select>
                 </div>
 
@@ -87,7 +89,7 @@
                             onchange="this.form.submit()"
                             class="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
                         <option value="">Semua Tingkat Urgensi</option>
-                        <option value="Sangat Mendesak" {{ request('urgensi') == 'Sangat Mendesak' ? 'selected' : '' }}>Darurat</option>
+                        <option value="Sangat Mendesak" {{ request('urgensi') == 'Sangat Mendesak' ? 'selected' : '' }}>Sangat Mendesak</option>
                         <option value="Mendesak" {{ request('urgensi') == 'Mendesak' ? 'selected' : '' }}>Mendesak</option>
                         <option value="Normal" {{ request('urgensi') == 'Normal' ? 'selected' : '' }}>Normal</option>
                     </select>
@@ -139,7 +141,7 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if($item->tingkat_urgensi == 'Sangat Mendesak')
                                     <span class="px-2.5 py-1 text-xs font-semibold rounded-md bg-red-100 text-red-700">
-                                        Darurat
+                                        Sangat Mendesak
                                     </span>
                                 @elseif($item->tingkat_urgensi == 'Mendesak')
                                     <span class="px-2.5 py-1 text-xs font-semibold rounded-md bg-yellow-100 text-yellow-700">
@@ -152,21 +154,29 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                @if($item->status_permintaan == 'Pending')
+                                @if($item->status_permintaan == 'Requesting')
+                                    <span class="px-2.5 py-1 text-xs font-semibold rounded-md bg-purple-100 text-purple-700">
+                                        Requesting
+                                    </span>
+                                @elseif($item->status_permintaan == 'Responded')
+                                    <span class="px-2.5 py-1 text-xs font-semibold rounded-md bg-indigo-100 text-indigo-700">
+                                        Responded
+                                    </span>
+                                @elseif($item->status_permintaan == 'Pending')
                                     <span class="px-2.5 py-1 text-xs font-semibold rounded-md bg-blue-100 text-blue-700">
-                                        Baru
+                                        Pending
                                     </span>
                                 @elseif($item->status_permintaan == 'Approved')
                                     <span class="px-2.5 py-1 text-xs font-semibold rounded-md bg-yellow-100 text-yellow-700">
-                                        Diproses
+                                        Approved
                                     </span>
                                 @elseif($item->status_permintaan == 'Completed')
                                     <span class="px-2.5 py-1 text-xs font-semibold rounded-md bg-green-100 text-green-700">
-                                        Terpenuhi
+                                        Completed
                                     </span>
                                 @else
                                     <span class="px-2.5 py-1 text-xs font-semibold rounded-md bg-gray-100 text-gray-700">
-                                        Ditolak
+                                        Rejected
                                     </span>
                                 @endif
                             </td>
@@ -212,7 +222,7 @@
 
 {{-- Modal Detail Permintaan --}}
 <div id="detailModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+    <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {{-- Header --}}
         <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-2xl">
             <h3 class="text-lg font-bold text-gray-900">Detail Permintaan Donor</h3>
@@ -264,17 +274,12 @@ function showDetail(id) {
 
 function renderDetail(data) {
     const statusColors = {
+        'Requesting': 'bg-purple-100 text-purple-700',
+        'Responded': 'bg-indigo-100 text-indigo-700',
         'Pending': 'bg-blue-100 text-blue-700',
         'Approved': 'bg-yellow-100 text-yellow-700',
         'Completed': 'bg-green-100 text-green-700',
         'Rejected': 'bg-gray-100 text-gray-700'
-    };
-
-    const statusText = {
-        'Pending': 'Baru',
-        'Approved': 'Diproses',
-        'Completed': 'Terpenuhi',
-        'Rejected': 'Ditolak'
     };
 
     const urgensiColors = {
@@ -283,11 +288,42 @@ function renderDetail(data) {
         'Normal': 'text-green-600'
     };
 
-    const urgensiText = {
-        'Sangat Mendesak': 'Darurat',
-        'Mendesak': 'Mendesak',
-        'Normal': 'Normal'
-    };
+    // ✅ Data Pendonor yang Merespons (jika ada)
+    let pendonorSection = '';
+    if (data.nama_pendonor_respond) {
+        pendonorSection = `
+            <div class="mb-6 p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
+                <h4 class="text-sm font-bold text-indigo-900 mb-3 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                    Pendonor yang Merespons
+                </h4>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-xs text-indigo-600 mb-1">Nama Pendonor</p>
+                        <p class="text-sm font-semibold text-gray-900">${data.nama_pendonor_respond}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-indigo-600 mb-1">Tanggal Lahir</p>
+                        <p class="text-sm text-gray-900">${data.tgl_lahir_pendonor ? new Date(data.tgl_lahir_pendonor).toLocaleDateString('id-ID') : '-'}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-indigo-600 mb-1">Golongan Darah</p>
+                        <p class="text-sm font-bold text-red-600">${data.gol_darah_pendonor || '-'}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-indigo-600 mb-1">No. Telepon</p>
+                        <p class="text-sm font-semibold text-blue-600">${data.no_telp_pendonor || '-'}</p>
+                    </div>
+                    <div class="col-span-2">
+                        <p class="text-xs text-indigo-600 mb-1">Waktu Respons</p>
+                        <p class="text-sm text-gray-900">${data.tanggal_respond ? new Date(data.tanggal_respond).toLocaleString('id-ID') : '-'}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
 
     const html = `
         <!-- Top Info -->
@@ -303,10 +339,12 @@ function renderDetail(data) {
             <div>
                 <p class="text-xs text-gray-600 mb-1">Status</p>
                 <span class="px-2 py-1 text-xs font-semibold rounded-md ${statusColors[data.status_permintaan]}">
-                    ${statusText[data.status_permintaan]}
+                    ${data.status_permintaan}
                 </span>
             </div>
         </div>
+
+        ${pendonorSection}
 
         <!-- Data Pasien -->
         <div class="mb-6">
@@ -351,7 +389,7 @@ function renderDetail(data) {
                 </div>
                 <div class="col-span-2">
                     <p class="text-xs text-gray-600 mb-1">Tingkat Urgensi</p>
-                    <p class="text-sm font-bold ${urgensiColors[data.tingkat_urgensi]}">${urgensiText[data.tingkat_urgensi]}</p>
+                    <p class="text-sm font-bold ${urgensiColors[data.tingkat_urgensi]}">${data.tingkat_urgensi}</p>
                 </div>
             </div>
         </div>
@@ -387,7 +425,7 @@ function renderDetail(data) {
 
         <!-- Actions -->
         <div class="flex gap-3 pt-4 border-t border-gray-200">
-            ${data.status_permintaan === 'Pending' ? `
+            ${data.status_permintaan === 'Responded' || data.status_permintaan === 'Pending' ? `
                 <button onclick="prosesPermintaan(${data.permintaan_id}, '${data.gol_darah}', '${data.jenis_permintaan || 'Darah Lengkap (Whole Blood)'}', ${data.jumlah_kantong})" 
                         class="flex-1 px-4 py-3 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700 transition-colors">
                     Proses Permintaan
@@ -458,7 +496,7 @@ function processRequest(id, golDarah, jenisDarah, jumlahKantong) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert('Permintaan berhasil diproses!\nStatus: Terpenuhi\nStok darah telah dikurangi.');
+            alert('Permintaan berhasil diproses!\nStatus: Completed\nStok darah telah dikurangi.');
             closeModal();
             window.location.reload();
         } else {

@@ -12,9 +12,10 @@ class PermintaanDonor extends Model
 
     protected $table = 'permintaan_donor';
     protected $primaryKey = 'permintaan_id';
+    public $timestamps = true;
 
     protected $fillable = [
-        'nomor_pelacakan', // ✅ Tambahkan ini
+        'nomor_pelacakan',
         'tanggal_hari',
         'nama_pasien',
         'gol_darah',
@@ -28,13 +29,23 @@ class PermintaanDonor extends Model
         'hubungan',
         'kontak_keluarga',
         'status_permintaan',
+        // ✅ DATA PENDONOR YANG MERESPONS
+        'nama_pendonor_respond',
+        'tgl_lahir_pendonor',
+        'gol_darah_pendonor',
+        'no_telp_pendonor',
+        'tanggal_respond'
     ];
 
     protected $casts = [
         'tanggal_hari' => 'date',
+        'tgl_lahir_pendonor' => 'date',
+        'tanggal_respond' => 'datetime',
     ];
 
-    // Relationships
+    /**
+     * Relasi ke DonasiDarah
+     */
     public function donasiDarah()
     {
         return $this->hasMany(DonasiDarah::class, 'permintaan_id', 'permintaan_id');

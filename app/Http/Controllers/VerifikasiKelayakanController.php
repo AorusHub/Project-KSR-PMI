@@ -42,13 +42,6 @@ class VerifikasiKelayakanController extends Controller
     public function submitKelayakan(Request $request)
     {
         try {
-            $request->validate([
-                'berat_badan' => 'required|numeric|min:40|max:200',
-                'hemoglobin' => 'required|numeric|min:8|max:20',
-                'tekanan_darah_sistol' => 'required|numeric|min:80|max:200',
-                'tekanan_darah_diastol' => 'required|numeric|min:50|max:150',
-            ]);
-
             $pendonor = auth()->user()->pendonor;
             
             if (!$pendonor) {
@@ -60,22 +53,16 @@ class VerifikasiKelayakanController extends Controller
 
             VerifikasiKelayakan::create([
                 'pendonor_id' => $pendonor->pendonor_id,
-                'berat_badan' => $request->berat_badan,
-                'tekanan_darah_sistol' => $request->tekanan_darah_sistol,
-                'tekanan_darah_diastol' => $request->tekanan_darah_diastol,
-                'hemoglobin' => $request->hemoglobin,
-                'suhu_tubuh' => $request->suhu_tubuh,
-                'sedang_sakit' => $request->input('sedang_sakit', 0),
-                'sedang_hamil' => $request->input('sedang_hamil', 0),
-                'sedang_menyusui' => $request->input('sedang_menyusui', 0),
-                'sedang_menstruasi' => $request->input('sedang_menstruasi', 0),
-                'riwayat_penyakit_menular' => $request->input('riwayat_penyakit_menular', 0),
+                'golongan_darah' => $request->golongan_darah ?? $pendonor->golongan_darah,
+                'berat_badan' => $request->berat_badan ?? 50,
+                'sedang_sakit_demam_batuk_pilek_flu' => $request->input('sedang_sakit_demam_batuk_pilek_flu', 0),
                 'konsumsi_obat' => $request->input('konsumsi_obat', 0),
-                'minum_alkohol_24jam' => $request->input('minum_alkohol_24jam', 0),
-                'tato_tindik_6bulan' => $request->input('tato_tindik_6bulan', 0),
-                'operasi_1tahun' => $request->input('operasi_1tahun', 0),
-                'transfusi_1tahun' => $request->input('transfusi_1tahun', 0),
-                'keterangan_tambahan' => $request->keterangan_tambahan,
+                'riwayat_penyakit_hepatitis_hiv_sifilis' => $request->input('riwayat_penyakit_hepatitis_hiv_sifilis', 0),
+                'pernah_ditato_ditindik_diupanat_6bulan' => $request->input('pernah_ditato_ditindik_diupanat_6bulan', 0),
+                'sedang_hamil_menyusui_melahirkan_6bulan' => $request->input('sedang_hamil_menyusui_melahirkan_6bulan', 0),
+                'menerima_operasi_transfusi_1tahun' => $request->input('menerima_operasi_transfusi_1tahun', 0),
+                'ke_daerah_endemis_malaria_1tahun' => $request->input('ke_daerah_endemis_malaria_1tahun', 0),
+                'alergi_obat_makanan_transfusi' => $request->input('alergi_obat_makanan_transfusi', 0),
                 'status_kelayakan' => 'Menunggu',
             ]);
 
@@ -85,6 +72,11 @@ class VerifikasiKelayakanController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            \Log::error('Error submit kelayakan:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()
