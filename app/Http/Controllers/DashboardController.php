@@ -293,4 +293,86 @@ public function adminDashboard()
         
         return $pdf->download($filename);
     }
+
+    public function profil()
+    {
+        $user = Auth::user();
+        $pendonor = Pendonor::where('user_id', $user->user_id)->first();
+        
+        if (!$pendonor) {
+            return redirect()->route('pendonor.dashboard')
+                ->withErrors(['error' => 'Data pendonor tidak ditemukan.']);
+        }
+
+        // Hitung statistik donasi
+        $totalDonasi = DonasiDarah::where('pendonor_id', $pendonor->pendonor_id)
+            ->where('status_donasi', 'Berhasil')
+            ->count();
+        
+        // Total kantong darah yang didonasikan
+        $totalKantong = $totalDonasi; // 1 donasi = 1 kantong
+        
+        // Donor terakhir
+        $donorTerakhirData = DonasiDarah::where('pendonor_id', $pendonor->pendonor_id)
+            ->where('status_donasi', 'Berhasil')
+            ->orderBy('tanggal_donasi', 'desc')
+            ->first();
+        
+        $donorTerakhir = $donorTerakhirData 
+            ? Carbon::parse($donorTerakhirData->tanggal_donasi)->format('d/m/Y') 
+            : null;
+        
+         // Donor berikutnya (3 bulan dari donor terakhir)
+        $donorBerikutnya = $donorTerakhirData 
+            ? Carbon::parse($donorTerakhirData->tanggal_donasi)->addMonths(3)->format('d/m/Y') 
+            : null;
+        
+        return view('dashboard.pendonor.pendonor-profile', compact(
+            'pendonor', 
+            'totalDonasi', 
+            'totalKantong', 
+            'donorTerakhir', 
+            'donorBerikutnya'
+        ));
+    }
+
+    /**
+     * Update profil pendonor
+     */
+    public function updateProfil(Request $request)
+    {
+        $validated = $request->validate([
+            'tanggal_lahir' => 'required|date|before:today',
+            'password' => 'nullable|min:8',
+        ], [
+            'tanggal_lahir.required' => 'Tanggal lahir wajib diisi',
+            'tanggal_lahir.before' => 'Tanggal lahir harus sebelum hari ini',
+            'jenis_kelamin.in' => 'Jenis kelamin tidak valid',
+            'password.min' => 'Password minimal 8 karakter',
+        ]);
+
+        $user = Auth::user();
+        $pendonor = Pendonor::where('user_id', $user->user_id)->first();
+        
+        if (!$pendonor) {
+            return redirect()->route('pendonor.dashboard')
+                ->withErrors(['error' => 'Data pendonor tidak ditemukan.']);
+        }
+
+        // Update data pendonor
+        $pendonor->update([
+            'tanggal_lahir' => $validated['tanggal_lahir'],
+        ]);
+
+        // Update password jika diisi
+        if ($request->filled('password')) {
+            $user->update([
+                'password' => bcrypt($validated['password'])
+            ]);
+        }
+
+        return redirect()->route('pendonor.profil')
+            ->with('success', 'Profil berhasil diperbarui!');
+    }
+
 }

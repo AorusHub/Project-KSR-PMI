@@ -135,6 +135,14 @@ Route::middleware(['auth', 'role:pendonor'])->prefix('pendonor')->name('pendonor
     Route::get('/riwayat-donor', [DashboardController::class, 'riwayatDonor'])->name('riwayat-donor');
     Route::get('/riwayat-donor/export-pdf', [DashboardController::class, 'exportPDF'])->name('riwayat-donor.export-pdf');
 
+    // ✅ TAMBAHKAN ROUTE PROFIL
+    Route::get('/profil', [DashboardController::class, 'profil'])->name('profil');
+    Route::put('/profil/update', [DashboardController::class, 'updateProfil'])->name('profil.update');
+    //  // ✅ TAMBAHKAN INI
+    // Route::delete('/profil/delete', [DashboardController::class, 'deleteAccount'])->name('profil.delete');
+    
+
+
     // Cek Kelayakan
     // ✅ CEK KELAYAKAN - GANTI KE CONTROLLER BARU
     Route::get('/cek-kelayakan-donor', [VerifikasiKelayakanController::class, 'cekKelayakan'])->name('cek-kelayakan-donor');
