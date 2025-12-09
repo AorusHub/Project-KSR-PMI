@@ -193,6 +193,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{id}/detail', [PermintaanDonorController::class, 'getDetail'])->name('detail');
         Route::post('/cek-stok', [PermintaanDonorController::class, 'cekStok'])->name('cek-stok');
         Route::post('/{id}/proses', [PermintaanDonorController::class, 'prosesPermintaan'])->name('proses');
+        Route::post('/{id}/update-status', [PermintaanDonorController::class, 'updateStatus'])->name('update-status');
     });
 
     Route::prefix('stok-darah')->name('stok-darah.')->group(function () {

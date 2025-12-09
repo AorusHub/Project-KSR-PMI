@@ -28,6 +28,11 @@ class StokDarahSeeder extends Seeder
         foreach ($golonganDarah as $golongan) {
             foreach ($jenisDarah as $jenis) {
                 
+                // ✅ SKIP JIKA GOLONGAN DARAH O+
+                if ($golongan === 'O+') {
+                    continue; // Tidak ada stok O+ sama sekali
+                }
+                
                 // ===== DATA 3 BULAN LALU =====
                 StokDarah::create([
                     'golongan_darah' => $golongan,
@@ -104,5 +109,6 @@ class StokDarahSeeder extends Seeder
 
         $this->command->info('✅ Stok Darah seeder berhasil dijalankan!');
         $this->command->info('📊 Total data: ' . StokDarah::count() . ' records');
+        $this->command->warn('⚠️  Golongan darah O+ tidak memiliki stok (0 kantong)');
     }
 }

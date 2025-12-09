@@ -43,7 +43,7 @@
 </div>
 
 <!-- Modal Belum Memenuhi Syarat -->
-<div id="notEligibleModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+{{-- <div id="notEligibleModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
     <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-lg bg-white">
         <div class="text-center">
             <div class="mb-4">
@@ -65,7 +65,7 @@
             </div>
         </div>
     </div>
-</div>
+</div> --}}
 
 <!-- Modal Menunggu Verifikasi -->
 <div id="verificationModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
@@ -98,6 +98,7 @@
 
     let currentQuestion = 0;
     let formData = {};
+    let isEligible = true;
     const totalQuestions = questions.length;
 
     function updateProgress() {
@@ -151,12 +152,10 @@
         
         // ✅ VALIDASI: Pertanyaan 0-6 harus "Tidak" (0), pertanyaan 7 harus "Ya" (1)
         if (currentQuestion <= 6 && answer === 1) {
-            setTimeout(() => showNotEligibleModal(), 500);
-            return;
+            isEligible = false;
         }
         if (currentQuestion === 7 && answer === 0) {
-            setTimeout(() => showNotEligibleModal(), 500);
-            return;
+            isEligible = false;
         }
 
         // Move to next question or finish
@@ -181,7 +180,7 @@
     }
 
     function showNotEligibleModal() {
-        document.getElementById('notEligibleModal').classList.remove('hidden');
+    window.location.href = '{{ route("pendonor.dashboard") }}';
     }
 
     function showVerificationModal() {

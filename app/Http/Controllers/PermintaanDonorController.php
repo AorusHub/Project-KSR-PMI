@@ -261,49 +261,83 @@ class PermintaanDonorController extends Controller
      */
     public function updateStatus(Request $request, $id)
     {
-        // ✅ Authorization: Hanya admin dan staff yang bisa akses
-        if (!in_array(Auth::user()->role, ['admin', 'staf'])) {
-            if ($request->ajax()) {
+        try {
+            // ✅ Log untuk debug
+            \Log::info('Update Status Request', [
+                'id' => $id,
+                'request_data' => $request->all(),
+                'user_role' => Auth::user()->role ?? 'guest'
+            ]);
+
+            // ✅ Authorization: Hanya admin dan staff yang bisa akses
+            if (!in_array(Auth::user()->role, ['admin', 'staf'])) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthorized action.'
                 ], 403);
             }
-            abort(403, 'Unauthorized action.');
-        }
 
-        $validated = $request->validate([
-            'status_permintaan' => 'required|in:Pending,Approved,Completed,Rejected'
-        ]);
-
-        try {
-            $permintaan = PermintaanDonor::findOrFail($id);
-            $permintaan->update([
-                'status_permintaan' => $validated['status_permintaan']
-            ]);
-
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Status berhasil diupdate!'
+            // ✅ UPDATE: Tambah "Failed" di validasi
+            try {
+                $validated = $request->validate([
+                    'status_permintaan' => 'required|in:Pending,Approved,Completed,Rejected,Requesting,Responded,Failed'
                 ]);
-            }
-
-            return back()->with('success', 'Status permintaan berhasil diupdate!');
-
-        } catch (\Exception $e) {
-            \Log::error('Error update status permintaan:', [
-                'message' => $e->getMessage()
-            ]);
-
-            if ($request->ajax()) {
+            } catch (\Illuminate\Validation\ValidationException $e) {
+                \Log::error('Validation error:', ['errors' => $e->errors()]);
+                
                 return response()->json([
                     'success' => false,
-                    'message' => 'Terjadi kesalahan saat mengupdate status.'
-                ], 500);
+                    'message' => 'Validasi gagal',
+                    'errors' => $e->errors()
+                ], 422);
             }
 
-            return back()->withErrors(['error' => 'Terjadi kesalahan saat mengupdate status.']);
+            $permintaan = PermintaanDonor::findOrFail($id);
+            
+            // ✅ Log sebelum update
+            \Log::info('Before update', [
+                'id' => $id,
+                'old_status' => $permintaan->status_permintaan
+            ]);
+            
+            $permintaan->status_permintaan = $validated['status_permintaan'];
+            $permintaan->save();
+            
+            // ✅ Log setelah update
+            \Log::info('After update', [
+                'id' => $id,
+                'new_status' => $permintaan->status_permintaan
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Status berhasil diupdate!',
+                'data' => [
+                    'id' => $permintaan->permintaan_id,
+                    'status' => $permintaan->status_permintaan
+                ]
+            ]);
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            \Log::error('Permintaan not found:', ['id' => $id]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Permintaan tidak ditemukan'
+            ], 404);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error update status permintaan:', [
+                'id' => $id,
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
         }
     }
 

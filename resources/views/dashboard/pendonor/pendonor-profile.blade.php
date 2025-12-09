@@ -18,25 +18,6 @@
         </div>
         @endif
 
-        {{-- Error Messages --}}
-        @if($errors->any())
-        <div class="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded">
-            <div class="flex items-start">
-                <svg class="w-5 h-5 text-red-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                </svg>
-                <div class="flex-1">
-                    <p class="text-red-700 font-medium mb-2">Terjadi kesalahan:</p>
-                    <ul class="list-disc list-inside text-sm text-red-600 space-y-1">
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            </div>
-        </div>
-        @endif
-
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
             {{-- Left Sidebar - Profile Summary --}}
@@ -96,7 +77,7 @@
                 </div>
             </div>
 
-            {{-- Right Content - Editable Profile Form --}}
+            {{-- Right Content - Profile View --}}
             <div class="lg:col-span-2">
                 <div class="bg-white rounded-2xl shadow-sm p-8">
                     
@@ -109,98 +90,92 @@
                         <p class="text-sm text-gray-600 mt-1">Golongan Darah: {{ $pendonor->golongan_darah ?? 'A+' }}</p>
                     </div>
 
-                    {{-- Editable Form --}}
-                    <form method="POST" action="{{ route('pendonor.profil.update') }}" id="profileForm">
-                        @csrf
-                        @method('PUT')
+                    {{-- Profile Information (Read Only) --}}
+                    <div class="space-y-0">
 
-                        <div class="space-y-0">
-
-                            {{-- Tanggal Lahir (Editable) --}}
-                            <div class="grid grid-cols-2 gap-4 py-4 border-b border-gray-100 group">
-                                <span class="text-sm text-gray-700 flex items-center">Tanggal Lahir</span>
-                                <div class="flex items-center justify-end space-x-2">
-                                    <input type="date" 
-                                           name="tanggal_lahir"
-                                           value="{{ old('tanggal_lahir', $pendonor->tanggal_lahir ? $pendonor->tanggal_lahir->format('Y-m-d') : '') }}"
-                                           class="text-sm text-gray-900 text-right font-medium border-0 bg-transparent focus:bg-gray-50 focus:border-gray-300 focus:ring-2 focus:ring-red-500 rounded px-2 py-1 transition"
-                                           required>
-                                    <svg class="w-4 h-4 text-gray-400 group-hover:text-red-600 transition" fill="currentColor" viewBox="0 0 20 20">
+                        {{-- Tanggal Lahir --}}
+                        <div class="grid grid-cols-2 gap-4 py-4 border-b border-gray-100 group hover:bg-gray-50 transition">
+                            <span class="text-sm text-gray-700">Tanggal Lahir</span>
+                            <div class="flex items-center justify-end space-x-2">
+                                <span class="text-sm text-gray-900 font-medium">
+                                    {{ $pendonor->tanggal_lahir ? $pendonor->tanggal_lahir->format('d F Y') : '09 Februari 2006' }}
+                                </span>
+                                <a href="#" class="opacity-0 group-hover:opacity-100 transition">
+                                    <svg class="w-4 h-4 text-gray-400 hover:text-red-600 transition" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
                                     </svg>
-                                </div>
+                                </a>
                             </div>
-
-                            {{-- Jenis Kelamin (Editable) --}}
-                            <div class="grid grid-cols-2 gap-4 py-4 border-b border-gray-100 group">
-                                <span class="text-sm text-gray-700 flex items-center">Jenis Kelamin</span>
-                                <div class="flex items-center justify-end space-x-2">
-                                    <select name="jenis_kelamin"
-                                            class="text-sm text-gray-900 text-right font-medium border-0 bg-transparent focus:bg-gray-50 focus:border-gray-300 focus:ring-2 focus:ring-red-500 rounded px-2 py-1 transition"
-                                            required>
-                                        <option value="L" {{ old('jenis_kelamin', $pendonor->jenis_kelamin ?? '') == 'L' ? 'selected' : '' }}>Laki-laki</option>
-                                        <option value="P" {{ old('jenis_kelamin', $pendonor->jenis_kelamin ?? '') == 'P' ? 'selected' : '' }}>Perempuan</option>
-                                    </select>
-                                    <svg class="w-4 h-4 text-gray-400 group-hover:text-red-600 transition" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
-                                    </svg>
-                                </div>
-                            </div>
-
-                            {{-- NIK (Read Only) --}}
-                            <div class="grid grid-cols-2 gap-4 py-4 border-b border-gray-100">
-                                <span class="text-sm text-gray-700">NIK</span>
-                                <span class="text-sm text-gray-500 text-right font-medium">{{ $pendonor->NIK ?? '123456789' }}</span>
-                            </div>
-
-                            {{-- Email (Read Only) --}}
-                            <div class="grid grid-cols-2 gap-4 py-4 border-b border-gray-100">
-                                <span class="text-sm text-gray-700">Email</span>
-                                <span class="text-sm text-gray-500 text-right font-medium">{{ Auth::user()->email ?? 'pendonor@demo.com' }}</span>
-                            </div>
-
-                            {{-- No. HP (Read Only) --}}
-                            <div class="grid grid-cols-2 gap-4 py-4 border-b border-gray-100">
-                                <span class="text-sm text-gray-700">No. HP</span>
-                                <span class="text-sm text-gray-500 text-right font-medium">{{ $pendonor->no_hp ?? '081234567890' }}</span>
-                            </div>
-
-                            {{-- Password (Editable) --}}
-                            <div class="grid grid-cols-2 gap-4 py-4 border-b border-gray-100 group">
-                                <span class="text-sm text-gray-700 flex items-center">Password</span>
-                                <div class="flex items-center justify-end space-x-2">
-                                    <div class="relative">
-                                        <input type="password" 
-                                               id="password"
-                                               name="password"
-                                               placeholder="Kosongkan jika tidak ingin mengubah"
-                                               class="text-sm text-gray-900 text-right font-medium border-0 bg-transparent focus:bg-gray-50 focus:border-gray-300 focus:ring-2 focus:ring-red-500 rounded px-2 py-1 pr-8 transition w-full">
-                                        <button type="button" 
-                                                onclick="togglePassword()"
-                                                class="absolute right-0 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                                            <svg id="eye-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    <svg class="w-4 h-4 text-gray-400 group-hover:text-red-600 transition" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
-                                    </svg>
-                                </div>
-                            </div>
-
                         </div>
 
-                        {{-- Save Button --}}
-                        <div class="pt-8 flex justify-center">
-                            <button type="submit" 
-                                    class="px-32 py-3 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition-all shadow-md hover:shadow-lg focus:ring-4 focus:ring-red-300">
-                                SIMPAN PERUBAHAN
-                            </button>
+                        {{-- Jenis Kelamin --}}
+                        <div class="grid grid-cols-2 gap-4 py-4 border-b border-gray-100 group hover:bg-gray-50 transition">
+                            <span class="text-sm text-gray-700">Jenis Kelamin</span>
+                            <div class="flex items-center justify-end space-x-2">
+                                <span class="text-sm text-gray-900 font-medium">
+                                    {{ $pendonor->jenis_kelamin == 'L' ? 'Laki-laki' : 'Perempuan' }}
+                                </span>
+                                <a href="#" class="opacity-0 group-hover:opacity-100 transition">
+                                    <svg class="w-4 h-4 text-gray-400 hover:text-red-600 transition" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
+                                    </svg>
+                                </a>
+                            </div>
                         </div>
 
-                    </form>
+                        {{-- NIK --}}
+                        <div class="grid grid-cols-2 gap-4 py-4 border-b border-gray-100 group hover:bg-gray-50 transition">
+                            <span class="text-sm text-gray-700">NIK</span>
+                            <div class="flex items-center justify-end space-x-2">
+                                <span class="text-sm text-gray-900 font-medium">{{ $pendonor->NIK ?? '123456789' }}</span>
+                                <a href="#" class="opacity-0 group-hover:opacity-100 transition">
+                                    <svg class="w-4 h-4 text-gray-400 hover:text-red-600 transition" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+
+                        {{-- Email --}}
+                        <div class="grid grid-cols-2 gap-4 py-4 border-b border-gray-100 group hover:bg-gray-50 transition">
+                            <span class="text-sm text-gray-700">Email</span>
+                            <div class="flex items-center justify-end space-x-2">
+                                <span class="text-sm text-gray-900 font-medium">{{ Auth::user()->email ?? 'pendonor@demo.com' }}</span>
+                                <a href="#" class="opacity-0 group-hover:opacity-100 transition">
+                                    <svg class="w-4 h-4 text-gray-400 hover:text-red-600 transition" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+
+                        {{-- No. HP --}}
+                        <div class="grid grid-cols-2 gap-4 py-4 border-b border-gray-100 group hover:bg-gray-50 transition">
+                            <span class="text-sm text-gray-700">No. HP</span>
+                            <div class="flex items-center justify-end space-x-2">
+                                <span class="text-sm text-gray-900 font-medium">{{ $pendonor->no_hp ?? '081234567890' }}</span>
+                                <a href="#" class="opacity-0 group-hover:opacity-100 transition">
+                                    <svg class="w-4 h-4 text-gray-400 hover:text-red-600 transition" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+
+                        {{-- Password --}}
+                        <div class="grid grid-cols-2 gap-4 py-4 border-b border-gray-100 group hover:bg-gray-50 transition">
+                            <span class="text-sm text-gray-700">Password</span>
+                            <div class="flex items-center justify-end space-x-2">
+                                <span class="text-sm text-gray-900 font-medium">••••••••</span>
+                                <a href="#" class="opacity-0 group-hover:opacity-100 transition">
+                                    <svg class="w-4 h-4 text-gray-400 hover:text-red-600 transition" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+
+                    </div>
 
                 </div>
             </div>
@@ -208,19 +183,4 @@
         </div>
     </div>
 </div>
-
-<script>
-function togglePassword() {
-    const input = document.getElementById('password');
-    const icon = document.getElementById('eye-icon');
-    
-    if (input.type === 'password') {
-        input.type = 'text';
-        icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>`;
-    } else {
-        input.type = 'password';
-        icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>`;
-    }
-}
-</script>
 @endsection
