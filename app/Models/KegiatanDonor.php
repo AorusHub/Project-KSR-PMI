@@ -17,6 +17,9 @@ class KegiatanDonor extends Model
         'waktu_mulai',
         'waktu_selesai',
         'lokasi',
+        'rincian_lokasi', // ✅ TAMBAH
+        'latitude',       // ✅ TAMBAH
+        'longitude',      // ✅ TAMBAH
         'deskripsi',
         'target_donor',
         'status',

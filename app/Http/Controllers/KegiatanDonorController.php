@@ -96,6 +96,7 @@ class KegiatanDonorController extends Controller
         }
     }
 
+
     // Admin: Daftar semua kegiatan (Manajemen Kegiatan)
     public function adminIndex()
     {
@@ -156,6 +157,9 @@ class KegiatanDonorController extends Controller
             'waktu_mulai' => 'required',
             'waktu_selesai' => 'required',
             'lokasi' => 'required|string|max:200',
+            'rincian_lokasi' => 'nullable|string|max:255', // ✅ TAMBAH INI
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
             'deskripsi' => 'nullable|string',
             'target_donor' => 'nullable|integer|min:0',
             'status' => 'required|in:Planned,Ongoing,Completed,Cancelled',
@@ -169,7 +173,6 @@ class KegiatanDonorController extends Controller
         
         KegiatanDonor::create($validated);
 
-        // Check if it's an AJAX request
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
@@ -198,6 +201,9 @@ class KegiatanDonorController extends Controller
                 'waktu_mulai' => 'required',
                 'waktu_selesai' => 'required',
                 'lokasi' => 'required|string|max:200',
+                'rincian_lokasi' => 'nullable|string|max:255', // ✅ TAMBAH INI
+                'latitude' => 'nullable|numeric',
+                'longitude' => 'nullable|numeric',
                 'deskripsi' => 'nullable|string',
                 'target_donor' => 'nullable|integer|min:0',
                 'status' => 'required|in:Planned,Ongoing,Completed,Cancelled',
@@ -206,7 +212,6 @@ class KegiatanDonorController extends Controller
             $kegiatan = KegiatanDonor::findOrFail($id);
             $kegiatan->update($validated);
 
-            // Check if it's an AJAX request
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => true,
