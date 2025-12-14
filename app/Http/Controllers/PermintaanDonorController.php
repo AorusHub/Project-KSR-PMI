@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Events\PermintaanDonorCreated;
 
 class PermintaanDonorController extends Controller
 {
@@ -64,6 +65,7 @@ class PermintaanDonorController extends Controller
                 'kontak_keluarga' => $validated['no_hp'],
                 'status_permintaan' => 'Pending',
             ]);
+            event(new \App\Events\PermintaanDonorCreated($permintaan));
 
             // Return JSON response untuk AJAX
             if ($request->ajax() || $request->wantsJson()) {

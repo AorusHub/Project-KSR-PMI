@@ -7,7 +7,7 @@ use App\Models\KegiatanDonor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\DonasiDarah;
-
+use App\Events\KegiatanDonorCreated;
 class KegiatanDonorController extends Controller
 {
     // Authenticated: Daftar kegiatan donor (untuk user yang login)
@@ -146,7 +146,7 @@ class KegiatanDonorController extends Controller
     public function create()
     {
         return view('admin.kegiatan.create');
-    }
+    } 
 
     // Admin: Store kegiatan baru
     public function store(Request $request)
@@ -171,7 +171,8 @@ class KegiatanDonorController extends Controller
             $validated['waktu_selesai'] = '14:00';
         }
         
-        KegiatanDonor::create($validated);
+         $kegiatan = KegiatanDonor::create($validated);
+        event(new KegiatanDonorCreated($kegiatan));
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
@@ -211,6 +212,7 @@ class KegiatanDonorController extends Controller
 
             $kegiatan = KegiatanDonor::findOrFail($id);
             $kegiatan->update($validated);
+            
 
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([

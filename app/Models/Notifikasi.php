@@ -1,5 +1,4 @@
 <?php
-// filepath: c:\xampp\htdocs\ksr-pmi\Project-KSR-PMI\app\Models\Notifikasi.php
 
 namespace App\Models;
 
@@ -12,15 +11,22 @@ class Notifikasi extends Model
 
     protected $table = 'notifikasi';
     protected $primaryKey = 'notifikasi_id';
-
+    
     protected $fillable = [
         'user_id',
         'judul_notif',
+        'jenis_notifikasi',
         'pesan_notif',
-        'status_notif',
+        'status_baca',
+        'tanggal_notifikasi',
     ];
 
-    // Relationships
+    protected $casts = [
+        'status_baca' => 'boolean',
+        'tanggal_notifikasi' => 'datetime',
+    ];
+
+    // Relasi ke User
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id', 'user_id');

@@ -1,4 +1,4 @@
-{{-- filepath: c:\xampp\htdocs\ksr-pmi\Project-KSR-PMI\resources\views\components\navbar.blade.php --}}
+{{-- filepath: resources/views/components/navbar.blade.php --}}
 <nav class="bg-white shadow-md border-b border-gray-200 sticky top-0 z-50" x-data="{ mobileMenuOpen: false }">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
@@ -44,21 +44,18 @@
                         } elseif ($user->isStaf()) {
                             $dashboardRoute = route('staf.dashboard');
                         }
-                        
-                        $notificationCount = 3;
                     @endphp
                     
-                    {{-- Notification Bell --}}
-                    <div class="relative" x-data="{ notifOpen: false }">
-                        <button @click="notifOpen = !notifOpen" class="relative p-1.5 sm:p-2 text-gray-600 hover:text-red-600 hover:bg-gray-100 rounded-full transition-colors focus:outline-none">
+                    {{-- ✅ NOTIFICATION BELL DENGAN REAL-TIME POLLING --}}
+                    <div class="relative" x-data="notificationSystem()">
+                        <button @click="toggleNotif()" class="relative p-1.5 sm:p-2 text-gray-600 hover:text-red-600 hover:bg-gray-100 rounded-full transition-colors focus:outline-none">
                             <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
                             </svg>
-                            @if($notificationCount > 0)
-                            <span class="absolute -top-1 -right-1 sm:top-0 sm:right-0 inline-flex items-center justify-center px-1.5 py-0.5 sm:px-2 sm:py-1 text-[10px] sm:text-xs font-bold leading-none text-white transform sm:translate-x-1/2 sm:-translate-y-1/2 bg-red-600 rounded-full">
-                                {{ $notificationCount }}
+                            <span x-show="unreadCount > 0" 
+                                  x-text="unreadCount" 
+                                  class="absolute -top-1 -right-1 sm:top-0 sm:right-0 inline-flex items-center justify-center px-1.5 py-0.5 sm:px-2 sm:py-1 text-[10px] sm:text-xs font-bold leading-none text-white transform sm:translate-x-1/2 sm:-translate-y-1/2 bg-red-600 rounded-full">
                             </span>
-                            @endif
                         </button>
 
                         {{-- Notification Dropdown --}}
@@ -68,92 +65,87 @@
                              class="absolute right-0 mt-2 w-[90vw] sm:w-80 bg-white rounded-lg shadow-xl py-2 z-50 border border-gray-200 max-h-[80vh] sm:max-h-96 overflow-y-auto"
                              style="display: none;">
                             
-                            <div class="px-4 py-3 border-b border-gray-200">
+                            <div class="px-4 py-3 border-b border-gray-200 flex justify-between items-center">
                                 <h3 class="text-sm font-bold text-gray-800">Notifikasi</h3>
+                                <button @click="markAllRead()" x-show="unreadCount > 0" class="text-xs text-red-600 hover:text-red-700 font-medium">
+                                    Tandai semua dibaca
+                                </button>
                             </div>
+
+                            {{-- Loading State --}}
+                            {{-- <div x-show="loading" class="px-4 py-8 text-center">
+                                <svg class="animate-spin h-8 w-8 text-red-600 mx-auto" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <p class="text-sm text-gray-500 mt-2">Memuat...</p>
+                            </div> --}}
 
                             {{-- Notification Items --}}
-                            <div class="divide-y divide-gray-100">
-                                <a href="#" class="block px-4 py-3 hover:bg-gray-50 transition-colors">
-                                    <div class="flex items-start space-x-3">
-                                        <div class="flex-shrink-0">
-                                            <div class="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                                                <svg class="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6z"/>
-                                                </svg>
-                                            </div>
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-xs sm:text-sm font-medium text-gray-900">Kegiatan Donor Baru</p>
-                                            <p class="text-[10px] sm:text-xs text-gray-500 mt-1">Ada kegiatan donor di Kampus UNHAS</p>
-                                            <p class="text-[10px] sm:text-xs text-gray-400 mt-1">2 jam yang lalu</p>
-                                        </div>
-                                        <span class="flex-shrink-0 w-2 h-2 bg-red-500 rounded-full"></span>
+                            <div x-show="!loading" class="divide-y divide-gray-100">
+                                <template x-if="notifications.length === 0">
+                                    <div class="px-4 py-8 text-center">
+                                        <svg class="w-12 h-12 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                                        </svg>
+                                        <p class="text-sm text-gray-500">Tidak ada notifikasi</p>
                                     </div>
-                                </a>
+                                </template>
 
-                                <a href="#" class="block px-4 py-3 hover:bg-gray-50 transition-colors">
-                                    <div class="flex items-start space-x-3">
-                                        <div class="flex-shrink-0">
-                                            <div class="w-8 h-8 sm:w-10 sm:h-10 bg-green-100 rounded-full flex items-center justify-center">
-                                                <svg class="w-4 h-4 sm:w-5 sm:h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                                                </svg>
+                                <template x-for="notif in notifications" :key="notif.id">
+                                    <a @click="markAsRead(notif.id)" :href="notif.url" class="block px-4 py-3 hover:bg-gray-50 transition-colors">
+                                        <div class="flex items-start space-x-3">
+                                            <div class="flex-shrink-0">
+                                                <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center"
+                                                    :class="{
+                                                        'bg-blue-100': notif.icon_type === 'blue',
+                                                        'bg-green-100': notif.icon_type === 'green',
+                                                        'bg-yellow-100': notif.icon_type === 'yellow',
+                                                        'bg-red-100': notif.icon_type === 'red'
+                                                    }">
+                                                    <svg class="w-4 h-4 sm:w-5 sm:h-5" 
+                                                        :class="{
+                                                            'text-blue-600': notif.icon_type === 'blue',
+                                                            'text-green-600': notif.icon_type === 'green',
+                                                            'text-yellow-600': notif.icon_type === 'yellow',
+                                                            'text-red-600': notif.icon_type === 'red'
+                                                        }"
+                                                        fill="currentColor" viewBox="0 0 20 20">
+                                                        <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6z"/>
+                                                    </svg>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-xs sm:text-sm font-medium text-gray-900">Donasi Berhasil</p>
-                                            <p class="text-[10px] sm:text-xs text-gray-500 mt-1">Terima kasih atas donasi Anda!</p>
-                                            <p class="text-[10px] sm:text-xs text-gray-400 mt-1">1 hari yang lalu</p>
-                                        </div>
-                                    </div>
-                                </a>
-
-                                <a href="#" class="block px-4 py-3 hover:bg-gray-50 transition-colors">
-                                    <div class="flex items-start space-x-3">
-                                        <div class="flex-shrink-0">
-                                            <div class="w-8 h-8 sm:w-10 sm:h-10 bg-yellow-100 rounded-full flex items-center justify-center">
-                                                <svg class="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-                                                </svg>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-xs sm:text-sm font-medium text-gray-900" x-text="notif.jenis"></p>
+                                                <p class="text-[10px] sm:text-xs text-gray-500 mt-1" x-text="notif.isi"></p>
+                                                <p class="text-[10px] sm:text-xs text-gray-400 mt-1" x-text="notif.waktu"></p>
                                             </div>
+                                            <span x-show="!notif.dibaca" class="flex-shrink-0 w-2 h-2 bg-red-500 rounded-full"></span>
                                         </div>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-xs sm:text-sm font-medium text-gray-900">Pengingat</p>
-                                            <p class="text-[10px] sm:text-xs text-gray-500 mt-1">Anda sudah bisa donor kembali</p>
-                                            <p class="text-[10px] sm:text-xs text-gray-400 mt-1">3 hari yang lalu</p>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-
-                            <div class="px-4 py-3 border-t border-gray-200 text-center">
-                                <a href="{{ url('/notifications') }}" class="text-xs sm:text-sm text-red-600 hover:text-red-700 font-medium">
-                                    Lihat Semua Notifikasi
-                                </a>
+                                    </a>
+                                </template>
                             </div>
                         </div>
                     </div>
 
                     {{-- Dashboard Button --}}
-                    @php //baru ditambah 
-    $isDashboardActive = false;
-    if ($user->isPendonor() && request()->routeIs('pendonor.*')) {
-        $isDashboardActive = true;
-    } elseif ($user->isAdmin() && request()->routeIs('admin.*')) {
-        $isDashboardActive = true;
-    } elseif ($user->isStaf() && request()->routeIs('staf.*')) {
-        $isDashboardActive = true;
-    }
-@endphp
-<a href="{{ $dashboardRoute }}" 
-   class="hidden sm:inline-flex items-center px-4 lg:px-5 py-2 font-semibold rounded-lg transition-all text-xs lg:text-sm
-          {{ $isDashboardActive 
-             ? 'bg-red-600 text-white shadow-md border-red-600' 
-             : 'bg-white border border-gray-300 text-gray-800 hover:border-red-600 hover:text-red-600' }}">
-    Dashboard
-</a> 
-
+                    @php
+                        $isDashboardActive = false;
+                        if ($user->isPendonor() && request()->routeIs('pendonor.*')) {
+                            $isDashboardActive = true;
+                        } elseif ($user->isAdmin() && request()->routeIs('admin.*')) {
+                            $isDashboardActive = true;
+                        } elseif ($user->isStaf() && request()->routeIs('staf.*')) {
+                            $isDashboardActive = true;
+                        }
+                    @endphp
+                    <a href="{{ $dashboardRoute }}" 
+                       class="hidden sm:inline-flex items-center px-4 lg:px-5 py-2 font-semibold rounded-lg transition-all text-xs lg:text-sm
+                              {{ $isDashboardActive 
+                                 ? 'bg-red-600 text-white shadow-md border-red-600' 
+                                 : 'bg-white border border-gray-300 text-gray-800 hover:border-red-600 hover:text-red-600' }}">
+                        Dashboard
+                    </a>
 
                     {{-- User Dropdown --}}
                     <div class="relative" x-data="{ dropdownOpen: false }">
@@ -190,7 +182,7 @@
                                 </div>
                             </a>
 
-                           {{-- ✅ TAMBAHKAN INI: MENU KHUSUS PENDONOR --}}
+                            {{-- MENU KHUSUS PENDONOR --}}
                             @if($user->isPendonor())
                                 <a href="{{ route('pendonor.profil') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                                     <div class="flex items-center space-x-2">
@@ -280,6 +272,98 @@
     </div>
 </nav>
 
+{{-- ✅ JAVASCRIPT POLLING UNTUK NOTIFIKASI REAL-TIME --}}
+@auth
 @push('scripts')
 <script src="//unpkg.com/alpinejs" defer></script>
+<script>
+function notificationSystem() {
+    return {
+        notifOpen: false,
+        loading: false,
+        notifications: [],
+        unreadCount: 0,
+        
+        init() {
+            // Muat notifikasi pertama kali
+            this.fetchNotifications();
+            this.fetchUnreadCount();
+            
+            // Polling setiap 10 detik (10000 ms)
+            setInterval(() => {
+                this.fetchUnreadCount();
+                if (this.notifOpen) {
+                    this.fetchNotifications();
+                }
+            }, 10000);
+        },
+        
+        toggleNotif() {
+            this.notifOpen = !this.notifOpen;
+            if (this.notifOpen) {
+                this.fetchNotifications();
+                // ✅ Tandai semua sebagai dibaca saat buka dropdown
+                setTimeout(() => {
+                    this.markAllRead();
+                }, 500);
+            }
+        },
+        
+       async fetchNotifications() {
+            // ✅ TIDAK ADA loading = true lagi
+            try {
+                const response = await fetch('/api/notifications/latest');
+                const data = await response.json();
+                this.notifications = data;
+            } catch (error) {
+                console.error('Error fetching notifications:', error);
+            }
+            // ✅ TIDAK ADA finally loading = false
+        },
+        
+        async fetchUnreadCount() {
+            try {
+                const response = await fetch('/api/notifications/unread-count');
+                const data = await response.json();
+                this.unreadCount = data.count;
+            } catch (error) {
+                console.error('Error fetching unread count:', error);
+            }
+        },
+        
+        async markAsRead(id) {
+            try {
+                await fetch(`/api/notifications/${id}/read`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                this.fetchNotifications();
+                this.fetchUnreadCount();
+            } catch (error) {
+                console.error('Error marking as read:', error);
+            }
+        },
+        
+        async markAllRead() {
+            try {
+                await fetch('/api/notifications/read-all', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                this.fetchNotifications();
+                this.fetchUnreadCount();
+            } catch (error) {
+                console.error('Error marking all as read:', error);
+            }
+        }
+    }
+}
+</script>
 @endpush
+@endauth

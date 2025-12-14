@@ -140,6 +140,9 @@
                             <div>
                                 <p class="text-xs text-gray-600 mb-0.5">Lokasi</p>
                                 <p class="text-sm text-gray-900 font-semibold">{{ $kegiatan->lokasi }}</p>
+                                @if($kegiatan->rincian_lokasi)
+                                    <p class="text-xs text-gray-600 mt-1">{{ $kegiatan->rincian_lokasi }}</p>
+                                @endif
                             </div>
                         </div>
 
@@ -205,18 +208,52 @@
                             </button>
                         @endauth
 
-                        {{-- Map Placeholder --}}
+                        {{-- ✅ MAP INTERACTIVE (GANTI PLACEHOLDER) --}}
                         <div class="mt-4">
-                            <div class="flex items-center justify-center h-40 bg-gray-100 rounded-lg border border-gray-200">
-                                <div class="text-center">
-                                    <svg class="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                    </svg>
-                                    <p class="text-sm text-gray-700 font-medium">{{ $kegiatan->lokasi }}</p>
-                                    <p class="text-xs text-gray-500 mt-1">Tamalanrea, Makassar</p>
+                            @if($kegiatan->latitude && $kegiatan->longitude)
+                                {{-- Map Container --}}
+                                <div id="detailMap" class="h-48 rounded-lg border-2 border-gray-300 overflow-hidden"></div>
+                                
+                                {{-- Address Info --}}
+                                <div class="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                    <div class="flex items-start">
+                                        <svg class="w-4 h-4 text-red-600 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        </svg>
+                                        <div class="flex-1">
+                                            <p class="text-sm font-semibold text-gray-900">{{ $kegiatan->lokasi }}</p>
+                                            @if($kegiatan->rincian_lokasi)
+                                                <p class="text-xs text-gray-600 mt-1">{{ $kegiatan->rincian_lokasi }}</p>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    
+                                    {{-- Button Buka di Google Maps --}}
+                                    <a href="https://www.google.com/maps/search/?api=1&query={{ $kegiatan->latitude }},{{ $kegiatan->longitude }}" 
+                                       target="_blank"
+                                       class="mt-3 flex items-center justify-center w-full py-2 px-3 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                                        </svg>
+                                        Buka di Google Maps
+                                    </a>
                                 </div>
-                            </div>
+                            @else
+                                {{-- Fallback jika tidak ada koordinat --}}
+                                <div class="flex items-center justify-center h-48 bg-gray-100 rounded-lg border border-gray-200">
+                                    <div class="text-center">
+                                        <svg class="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        </svg>
+                                        <p class="text-sm text-gray-700 font-medium">{{ $kegiatan->lokasi }}</p>
+                                        @if($kegiatan->rincian_lokasi)
+                                            <p class="text-xs text-gray-500 mt-1">{{ $kegiatan->rincian_lokasi }}</p>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endif
                         </div>
 
                     </div>
@@ -286,6 +323,40 @@
     </div>
 </div>
 
+@push('styles')
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+    #detailMap {
+        height: 192px;
+        width: 100%;
+    }
+    
+    /* Custom popup styling */
+    .leaflet-popup-content-wrapper {
+        border-radius: 8px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    
+    .leaflet-popup-content {
+        margin: 10px 12px;
+    }
+    
+    .leaflet-popup-tip {
+        background: white;
+    }
+    
+    /* Zoom control styling */
+    .leaflet-control-zoom {
+        border: 2px solid rgba(0,0,0,0.2);
+        border-radius: 6px;
+    }
+    
+    .leaflet-control-zoom a {
+        border-radius: 4px;
+    }
+</style>
+@endpush
+
 @push('scripts')
 <script>
 function handleDaftar(kegiatanId, sudahDaftar) {
@@ -352,6 +423,160 @@ document.querySelectorAll('[id^="modal"]').forEach(modal => {
         }
     });
 });
+</script>
+@endpush
+
+@push('scripts')
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    // ✅ INITIALIZE MAP UNTUK DETAIL KEGIATAN
+    @if($kegiatan->latitude && $kegiatan->longitude)
+    document.addEventListener('DOMContentLoaded', function() {
+        // Koordinat lokasi kegiatan
+        const lat = {{ $kegiatan->latitude }};
+        const lng = {{ $kegiatan->longitude }};
+        
+        console.log('📍 Koordinat:', lat, lng);
+        
+        // Create map dengan zoom level 18
+        const detailMap = L.map('detailMap', {
+            scrollWheelZoom: true,
+            dragging: true,
+            touchZoom: true,
+            doubleClickZoom: true,
+            boxZoom: true,
+            keyboard: true,
+            zoomControl: true
+        }).setView([lat, lng], 18);
+
+        // Add tile layer (OpenStreetMap)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 19,
+            minZoom: 5
+        }).addTo(detailMap);
+
+        // Add marker dengan icon merah custom
+        const marker = L.marker([lat, lng], {
+            icon: L.icon({
+                iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+                shadowSize: [41, 41]
+            }),
+            title: '{{ $kegiatan->nama_kegiatan }}'
+        }).addTo(detailMap);
+
+        // Add popup (TIDAK DIBUKA OTOMATIS, hanya jika user klik marker)
+        const popupContent = `
+            <div style="text-align: center; padding: 8px; min-width: 200px;">
+                <strong style="font-size: 14px; color: #dc2626; display: block; margin-bottom: 8px;">
+                    {{ $kegiatan->nama_kegiatan }}
+                </strong>
+                <span style="font-size: 12px; color: #4b5563; display: block; margin-bottom: 5px;">
+                    📍 {{ $kegiatan->lokasi }}
+                </span>
+                @if($kegiatan->rincian_lokasi)
+                    <span style="font-size: 11px; color: #6b7280; display: block;">
+                        {{ $kegiatan->rincian_lokasi }}
+                    </span>
+                @endif
+            </div>
+        `;
+        
+        marker.bindPopup(popupContent, {
+            maxWidth: 300,
+            minWidth: 200,
+            className: 'custom-popup'
+        });
+
+        // ✅ TIDAK ADA AUTO OPEN POPUP - Popup hanya muncul saat klik marker
+
+        // Fix map size dan center tepat di marker
+        setTimeout(() => {
+            detailMap.invalidateSize();
+            detailMap.setView([lat, lng], 18);
+        }, 100);
+
+        // Recenter saat window resize
+        window.addEventListener('resize', function() {
+            setTimeout(() => {
+                detailMap.invalidateSize();
+                detailMap.setView([lat, lng], detailMap.getZoom());
+            }, 100);
+        });
+
+        console.log('✅ Map initialized successfully');
+    });
+    @endif
+
+    // ✅ EXISTING FUNCTIONS
+    function handleDaftar(kegiatanId, sudahDaftar) {
+        if (sudahDaftar) {
+            alert('Anda sudah terdaftar di kegiatan ini');
+            return;
+        }
+        daftarKegiatan(kegiatanId);
+    }
+
+    function daftarKegiatan(kegiatanId) {
+        const btn = document.getElementById('btnDaftar');
+        const originalText = btn.innerHTML;
+        
+        btn.innerHTML = 'Mendaftar...';
+        btn.disabled = true;
+
+        fetch(`/kegiatan/${kegiatanId}/daftar`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showModal('modalSuccess');
+            } else {
+                alert(data.message || 'Gagal mendaftar');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat mendaftar');
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+    }
+
+    function showModal(modalId) {
+        document.getElementById(modalId).classList.remove('hidden');
+        document.getElementById(modalId).classList.add('flex');
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).classList.add('hidden');
+        document.getElementById(modalId).classList.remove('flex');
+    }
+
+    function closeModalAndReload(modalId) {
+        closeModal(modalId);
+        location.reload();
+    }
+
+    // Close modal saat klik di luar
+    document.querySelectorAll('[id^="modal"]').forEach(modal => {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal(this.id);
+            }
+        });
+    });
 </script>
 @endpush
 @endsection
