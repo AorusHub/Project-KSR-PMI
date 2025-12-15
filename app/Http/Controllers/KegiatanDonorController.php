@@ -8,6 +8,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\DonasiDarah;
 use App\Events\KegiatanDonorCreated;
+use App\Http\Controllers\NotifikasiController;
+
+
 class KegiatanDonorController extends Controller
 {
     // Authenticated: Daftar kegiatan donor (untuk user yang login)
@@ -170,9 +173,16 @@ class KegiatanDonorController extends Controller
         if (empty($validated['waktu_selesai'])) {
             $validated['waktu_selesai'] = '14:00';
         }
+
+        // ✅ TAMBAHKAN INI - YANG HILANG!
+        if (empty($validated['rincian_lokasi'])) {
+            $validated['rincian_lokasi'] = '-';
+        }
+        
         
          $kegiatan = KegiatanDonor::create($validated);
         event(new KegiatanDonorCreated($kegiatan));
+        NotifikasiController::sendNewActivityNotification($kegiatan);
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
@@ -200,7 +210,7 @@ class KegiatanDonorController extends Controller
                 'nama_kegiatan' => 'required|string|max:100',
                 'tanggal' => 'required|date',
                 'waktu_mulai' => 'required',
-                'waktu_selesai' => 'required',
+                'waktu_selesai' => 'nullable',
                 'lokasi' => 'required|string|max:200',
                 'rincian_lokasi' => 'nullable|string|max:255', // ✅ TAMBAH INI
                 'latitude' => 'nullable|numeric',
@@ -209,10 +219,29 @@ class KegiatanDonorController extends Controller
                 'target_donor' => 'nullable|integer|min:0',
                 'status' => 'required|in:Planned,Ongoing,Completed,Cancelled',
             ]);
+             // ✅ Set default values
+            if (empty($validated['rincian_lokasi'])) {
+                $validated['rincian_lokasi'] = '-';
+            }
 
             $kegiatan = KegiatanDonor::findOrFail($id);
+
+            $oldStatus = $kegiatan->status;
+
             $kegiatan->update($validated);
             
+            
+
+            // ✅ KIRIM NOTIFIKASI saat status berubah
+            if ($oldStatus !== 'Ongoing' && $validated['status'] === 'Ongoing') {
+                // Kegiatan baru dimulai
+                NotifikasiController::sendActivityStarted($kegiatan);
+            }
+            
+            if ($oldStatus !== 'Completed' && $validated['status'] === 'Completed') {
+                // Kegiatan selesai
+                NotifikasiController::sendActivityFinished($kegiatan);
+            }
 
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
@@ -254,7 +283,17 @@ class KegiatanDonorController extends Controller
         ]);
 
         $kegiatan = KegiatanDonor::findOrFail($id);
+        $oldStatus = $kegiatan->status;
         $kegiatan->update(['status' => $validated['status']]);
+
+        // ✅ KIRIM NOTIFIKASI saat status berubah
+        if ($oldStatus !== 'Ongoing' && $validated['status'] === 'Ongoing') {
+                NotifikasiController::sendActivityStarted($kegiatan);
+        }
+            
+        if ($oldStatus !== 'Completed' && $validated['status'] === 'Completed') {
+                NotifikasiController::sendActivityFinished($kegiatan);
+        }
 
         return redirect()->back()
             ->with('success', 'Status kegiatan berhasil diupdate!');

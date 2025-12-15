@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Events\PermintaanDonorCreated;
+use App\Http\Controllers\NotifikasiController;
 
 class PermintaanDonorController extends Controller
 {
@@ -66,6 +67,12 @@ class PermintaanDonorController extends Controller
                 'status_permintaan' => 'Pending',
             ]);
             event(new \App\Events\PermintaanDonorCreated($permintaan));
+
+              // ✅ TAMBAHKAN DI SINI: Kirim notifikasi jika sangat mendesak
+            if ($permintaan->tingkat_urgensi === 'Sangat Mendesak') {
+                NotifikasiController::sendUrgentRequestToAdminStaff($permintaan);
+                NotifikasiController::sendUrgentRequestToDonor($permintaan);
+            }
 
             // Return JSON response untuk AJAX
             if ($request->ajax() || $request->wantsJson()) {

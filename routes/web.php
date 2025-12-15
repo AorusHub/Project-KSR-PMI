@@ -221,6 +221,7 @@ Route::middleware(['auth'])->prefix('api/notifications')->name('api.notification
     Route::get('/unread-count', [NotifikasiController::class, 'getUnreadCount'])->name('unread-count');
     Route::post('/{id}/read', [NotifikasiController::class, 'markAsRead'])->name('read');
     Route::post('/read-all', [NotifikasiController::class, 'markAllAsRead'])->name('read-all');
+    Route::get('/cron/check-activities', [NotifikasiController::class, 'checkActivityStatus']);
 });
 
 /*  
