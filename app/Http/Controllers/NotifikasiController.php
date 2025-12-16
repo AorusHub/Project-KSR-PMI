@@ -13,6 +13,9 @@ use Carbon\Carbon;
 
 class NotifikasiController extends Controller
 {
+    /**
+     * ✅ Get latest notifications dengan format lengkap
+     */
     public function getLatest()
     {
         if (!Auth::check()) {
@@ -21,23 +24,26 @@ class NotifikasiController extends Controller
 
         $notifications = Notifikasi::where('user_id', Auth::id())
             ->orderBy('tanggal_notifikasi', 'desc')
-            ->take(5)
+            ->take(10)
             ->get()
             ->map(function($notif) {
                 return [
                     'id' => $notif->notifikasi_id,
-                    'jenis' => $notif->jenis_notifikasi,
+                    'jenis' => $notif->judul_notif ?? $notif->jenis_notifikasi,
                     'isi' => $notif->pesan_notif,
-                    'dibaca' => (bool)$notif->status_baca,
-                    'waktu' => $notif->tanggal_notifikasi->diffForHumans(),
+                    'waktu' => $this->getRelativeTime($notif->tanggal_notifikasi),
+                    'dibaca' => (bool) $notif->status_baca,
                     'icon_type' => $this->getIconType($notif->jenis_notifikasi),
-                    'url' => $this->getNotificationUrl($notif->jenis_notifikasi),
+                    'url' => $this->getNotificationUrl($notif->jenis_notifikasi)
                 ];
             });
 
         return response()->json($notifications);
     }
 
+    /**
+     * ✅ Get unread count
+     */
     public function getUnreadCount()
     {
         if (!Auth::check()) {
@@ -51,6 +57,9 @@ class NotifikasiController extends Controller
         return response()->json(['count' => $count]);
     }
 
+    /**
+     * ✅ Mark single notification as read
+     */
     public function markAsRead($id)
     {
         if (!Auth::check()) {
@@ -69,6 +78,9 @@ class NotifikasiController extends Controller
         return response()->json(['success' => false], 404);
     }
 
+    /**
+     * ✅ Mark all notifications as read
+     */
     public function markAllAsRead()
     {
         if (!Auth::check()) {
@@ -85,132 +97,80 @@ class NotifikasiController extends Controller
     // ========== STATIC METHODS UNTUK KIRIM NOTIFIKASI ==========
 
     /**
-     * ✅ Kirim notifikasi kegiatan baru HANYA ke admin & staf
-     */
-    public static function sendNewActivityNotification($kegiatan)
-    {
-        $adminStaff = User::whereIn('role', ['admin', 'staf'])
-        ->where('user_id', '!=', $kegiatan->created_by)
-        ->whereDoesntHave('pendonor')
-        ->get();
-        
-        foreach ($adminStaff as $user) {
-            Notifikasi::create([
-                'user_id' => $user->user_id,
-                'jenis_notifikasi' => 'Kegiatan Baru',
-                'pesan_notif' => "📢 Kegiatan baru '{$kegiatan->nama_kegiatan}' telah dibuat untuk tanggal " . \Carbon\Carbon::parse($kegiatan->tanggal)->format('d/m/Y'),
-                'status_baca' => false,
-                'tanggal_notifikasi' => now(),
-            ]);
-        }
-    }
-
-    /**
-     * Kirim notifikasi permintaan sangat mendesak ke admin & staf
-     */
-    public static function sendUrgentRequestToAdminStaff($permintaanDarah)
-    {
-        $users = User::whereIn('role', ['admin', 'staf'])->get();
-        
-        foreach ($users as $user) {
-            Notifikasi::create([
-                'user_id' => $user->user_id,
-                'jenis_notifikasi' => 'Permintaan Sangat Mendesak',
-                'pesan_notif' => "🚨 SANGAT MENDESAK! Permintaan darah {$permintaanDarah->gol_darah} sebanyak {$permintaanDarah->jumlah_kantong} kantong untuk {$permintaanDarah->nama_pasien}",
-                'status_baca' => false,
-                'tanggal_notifikasi' => now(),
-            ]);
-        }
-    }
-
-    /**
-     * Kirim notifikasi permintaan sangat mendesak ke pendonor yang sesuai
-     */
-    public static function sendUrgentRequestToDonor($permintaanDarah)
-    {
-        $pendonors = Pendonor::where('golongan_darah', $permintaanDarah->gol_darah)
-            ->with('user')
-            ->get();
-        
-        foreach ($pendonors as $pendonor) {
-            // ✅ PERBAIKI: Gunakan $pendonor->user->user_id, bukan $pendonor->user_id
-            if ($pendonor->user) {
-                Notifikasi::create([
-                    'user_id' => $pendonor->user->user_id,
-                    'jenis_notifikasi' => 'Permintaan Sangat Mendesak',
-                    'pesan_notif' => "🚨 SANGAT MENDESAK! Dibutuhkan donor {$permintaanDarah->gol_darah} sebanyak {$permintaanDarah->jumlah_kantong} kantong. Segera donor!",
-                    'status_baca' => false,
-                    'tanggal_notifikasi' => now(),
-                ]);
-            }
-        }
-    }
-
-    /**
-     * ✅ Kirim notifikasi kegiatan dimulai ke admin, staf, DAN pendonor yang terdaftar
+     * ✅ Kirim notifikasi kegiatan dimulai ke SEMUA USER (admin, staf, pendonor)
      */
     public static function sendActivityStarted($kegiatan)
     {
-        // 1. Notif ke admin & staf
-        $adminStaff = User::whereIn('role', ['admin', 'staf'])->get();
-        foreach ($adminStaff as $user) {
+        // ✅ Kirim ke SEMUA USER (admin, staf, pendonor)
+        $allUsers = User::whereIn('role', ['admin', 'staf', 'pendonor'])->get();
+
+        foreach ($allUsers as $user) {
             Notifikasi::create([
                 'user_id' => $user->user_id,
+                'judul_notif' => 'Kegiatan Dimulai',
                 'jenis_notifikasi' => 'Kegiatan Dimulai',
-                'pesan_notif' => "📍 Kegiatan '{$kegiatan->nama_kegiatan}' telah dimulai di {$kegiatan->lokasi}",
+                'pesan_notif' => "Kegiatan '{$kegiatan->nama_kegiatan}' telah dimulai di {$kegiatan->lokasi}.",
                 'status_baca' => false,
                 'tanggal_notifikasi' => now(),
             ]);
         }
-
-        // 2. ✅ Notif ke PENDONOR yang terdaftar di kegiatan (dari DonasiDarah)
-        $donasiDarah = \App\Models\DonasiDarah::where('kegiatan_id', $kegiatan->kegiatan_id)
-            ->whereHas('pendonor.user')
-            ->with(['pendonor.user'])
-            ->get();
-        
-        foreach ($donasiDarah as $donasi) {
-            if ($donasi->pendonor && $donasi->pendonor->user) {
-                Notifikasi::create([
-                    'user_id' => $donasi->pendonor->user->user_id,
-                    'jenis_notifikasi' => 'Kegiatan Dimulai',
-                    'pesan_notif' => "📍 Kegiatan '{$kegiatan->nama_kegiatan}' yang Anda ikuti telah dimulai di {$kegiatan->lokasi}. Silakan datang!",
-                    'status_baca' => false,
-                    'tanggal_notifikasi' => now(),
-                ]);
-            }
-        }
     }
 
     /**
-     * ✅ Kirim notifikasi kegiatan selesai ke admin, staf, DAN pendonor yang terdaftar
+     * ✅ Kirim notifikasi kegiatan selesai ke SEMUA USER (admin, staf, pendonor)
      */
     public static function sendActivityFinished($kegiatan)
     {
-        // 1. Notif ke admin & staf
-        $adminStaff = User::whereIn('role', ['admin', 'staf'])->get();
-        foreach ($adminStaff as $user) {
+        // ✅ Kirim ke SEMUA USER (admin, staf, pendonor)
+        $allUsers = User::whereIn('role', ['admin', 'staf', 'pendonor'])->get();
+
+        foreach ($allUsers as $user) {
             Notifikasi::create([
                 'user_id' => $user->user_id,
+                'judul_notif' => 'Kegiatan Selesai',
                 'jenis_notifikasi' => 'Kegiatan Selesai',
-                'pesan_notif' => "✅ Kegiatan '{$kegiatan->nama_kegiatan}' telah selesai. Terima kasih atas partisipasinya!",
+                'pesan_notif' => "Kegiatan '{$kegiatan->nama_kegiatan}' telah selesai. Terima kasih atas partisipasinya!",
                 'status_baca' => false,
                 'tanggal_notifikasi' => now(),
             ]);
         }
+    }
 
-        // 2. ✅ Notif ke PENDONOR yang terdaftar di kegiatan (dari DonasiDarah)
-        $donasiDarah = \App\Models\DonasiDarah::where('kegiatan_id', $kegiatan->kegiatan_id)
-            ->whereHas('pendonor.user')
-            ->with(['pendonor.user'])
+    /**
+     * ✅ Kirim notifikasi ke pendonor saat permintaan jadi "Requesting"
+     */
+    public static function sendRequestingToDonor($permintaan)
+    {
+        // Hitung total permintaan "Requesting" yang mendesak
+        $totalRequesting = PermintaanDonor::whereIn('tingkat_urgensi', ['Mendesak', 'Sangat Mendesak'])
+            ->where('status_permintaan', 'Requesting')
+            ->count();
+
+        // ✅ Kirim ke SEMUA PENDONOR
+        $pendonors = User::where('role', 'pendonor')
+            ->whereHas('pendonor')
             ->get();
 
-        foreach ($donasiDarah as $donasi) {
-            if ($donasi->pendonor && $donasi->pendonor->user) {
+        foreach ($pendonors as $pendonor) {
+            // ✅ Cari notifikasi BELUM DIBACA yang sudah ada
+            $existingNotif = Notifikasi::where('user_id', $pendonor->user_id)
+                ->where('jenis_notifikasi', 'Permintaan Darurat')
+                ->where('status_baca', false)
+                ->first();
+            
+            if ($existingNotif) {
+                // ✅ UPDATE notifikasi yang ada
+                $existingNotif->update([
+                    'pesan_notif' => "🩸 Terdapat {$totalRequesting} permintaan donor mendesak yang membutuhkan bantuan Anda!",
+                    'tanggal_notifikasi' => now(),
+                ]);
+            } else {
+                // ✅ BUAT notifikasi baru
                 Notifikasi::create([
-                    'user_id' => $donasi->pendonor->user->user_id,
-                    'jenis_notifikasi' => 'Kegiatan Selesai',
-                    'pesan_notif' => "✅ Kegiatan '{$kegiatan->nama_kegiatan}' telah selesai. Terima kasih telah berpartisipasi sebagai pendonor!",
+                    'user_id' => $pendonor->user_id,
+                    'judul_notif' => 'Butuh Donor Darah!',
+                    'jenis_notifikasi' => 'Permintaan Darurat',
+                    'pesan_notif' => "🩸 Terdapat {$totalRequesting} permintaan donor mendesak yang membutuhkan bantuan Anda!",
                     'status_baca' => false,
                     'tanggal_notifikasi' => now(),
                 ]);
@@ -219,14 +179,13 @@ class NotifikasiController extends Controller
     }
 
     /**
-     * Check status kegiatan dan kirim notifikasi otomatis
+     * ✅ Check status kegiatan dan kirim notifikasi otomatis
      * Bisa dipanggil manual atau via cron job
      */
     public function checkActivityStatus()
     {
         $now = Carbon::now();
 
-        // ✅ PERBAIKI: Gunakan field 'tanggal' dan 'status', bukan 'tanggal_kegiatan' dan 'status_kegiatan'
         // Cek kegiatan yang baru dimulai (dalam 5 menit terakhir)
         $startedActivities = KegiatanDonor::where('tanggal', '<=', $now)
             ->where('tanggal', '>=', $now->copy()->subMinutes(5))
@@ -257,19 +216,56 @@ class NotifikasiController extends Controller
 
     // ========== PRIVATE HELPER METHODS ==========
 
+    /**
+     * ✅ Get relative time (1 menit yang lalu, 1 jam yang lalu, dll)
+     */
+    private function getRelativeTime($date)
+    {
+        $now = now();
+        $notifDate = Carbon::parse($date);
+        
+        // ✅ FIX: Hitung dari sekarang ke notifikasi (bukan sebaliknya)
+        $diffInSeconds = $now->diffInSeconds($notifDate, false);
+        
+        // Jika negatif, berarti notifikasi di masa lalu
+        if ($diffInSeconds < 0) {
+            $diffInSeconds = abs($diffInSeconds);
+        }
+        
+        // Format waktu
+        if ($diffInSeconds < 60) {
+            return 'Baru saja'; // Ganti "X detik yang lalu" jadi "Baru saja"
+        } elseif ($diffInSeconds < 3600) {
+            $minutes = floor($diffInSeconds / 60);
+            return $minutes . ' menit yang lalu';
+        } elseif ($diffInSeconds < 86400) {
+            $hours = floor($diffInSeconds / 3600);
+            return $hours . ' jam yang lalu';
+        } elseif ($diffInSeconds < 604800) { // 7 hari
+            $days = floor($diffInSeconds / 86400);
+            return $days . ' hari yang lalu';
+        } else {
+            // Lebih dari 7 hari → tampilkan tanggal
+            return $notifDate->locale('id')->isoFormat('D MMM Y');
+        }
+    }
+
+    /**
+     * ✅ Get notification URL berdasarkan jenis dan role user
+     */
     private function getNotificationUrl($jenis)
     {
         $user = Auth::user();
     
         return match($jenis) {
             'Kegiatan Baru' => in_array($user->role, ['admin', 'staf']) 
-                ? route('managemen.kegiatan.index')
+                ? route('admin.kegiatan.index')
                 : route('kegiatan.index'),
             'Permintaan Darurat', 'Permintaan Sangat Mendesak' => $user->role === 'pendonor'
                 ? route('pendonor.permintaan-darah')
-                : route('managemen.permintaan-darurat.index'),
+                : route('admin.permintaan-darurat.index'),
             'Kegiatan Dimulai', 'Kegiatan Selesai' => in_array($user->role, ['admin', 'staf'])
-                ? route('managemen.kegiatan.index')
+                ? route('admin.kegiatan.index')
                 : route('kegiatan.index'),
             'Donasi Berhasil' => route('pendonor.riwayat-donor'),
             'Pengingat' => route('pendonor.dashboard'),
@@ -277,6 +273,9 @@ class NotifikasiController extends Controller
         };
     }
 
+    /**
+     * ✅ Get icon type berdasarkan jenis notifikasi
+     */
     private function getIconType($jenis)
     {
         return match($jenis) {
@@ -284,7 +283,7 @@ class NotifikasiController extends Controller
             'Kegiatan Selesai', 'Donasi Berhasil' => 'green',
             'Pengingat' => 'yellow',
             'Permintaan Darurat', 'Permintaan Sangat Mendesak' => 'red',
-            default => 'gray',
+            default => 'blue',
         };
     }
 }

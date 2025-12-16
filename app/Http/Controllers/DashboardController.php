@@ -25,11 +25,11 @@ public function adminDashboard()
         
         // Kantong Terkumpul (Total Volume Darah)
         $totalVolumeMl = DonasiDarah::where('status_donasi', 'Berhasil')
-            ->sum('volume_darah');
+            ->sum('jumlah_kantong');
         $kantongTerkumpul = round($totalVolumeMl / 350);
         $kantongBulanIni = DonasiDarah::where('status_donasi', 'Berhasil')
             ->whereMonth('tanggal_donasi', now()->month)
-            ->sum('volume_darah');
+            ->sum('jumlah_kantong');
         
         // Kegiatan Aktif
         $kegiatanAktif = KegiatanDonor::whereIn('status', ['Completed', 'Planned'])->count();
@@ -222,7 +222,7 @@ public function adminDashboard()
         // Total volume darah yang didonasikan (ml)
         $totalVolume = DonasiDarah::where('pendonor_id', $pendonor->pendonor_id)
             ->where('status_donasi', 'Berhasil')
-            ->sum('volume_darah');
+            ->sum('jumlah_kantong');
         
         return view('dashboard.pendonor.riwayat-donor', compact(
             'pendonor',
@@ -273,7 +273,7 @@ public function adminDashboard()
         // ✅ Total volume darah
         $totalVolume = DonasiDarah::where('pendonor_id', $pendonor->pendonor_id)
             ->where('status_donasi', 'Berhasil')
-            ->sum('volume_darah');
+            ->sum('jumlah_kantong');
         
         // ✅ Hitung persentase keberhasilan
         $totalDonasi = $riwayatDonasi->count();

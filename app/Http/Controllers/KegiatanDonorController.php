@@ -13,16 +13,75 @@ use App\Http\Controllers\NotifikasiController;
 
 class KegiatanDonorController extends Controller
 {
-    // Authenticated: Daftar kegiatan donor (untuk user yang login)
     public function index()
     {
+        // ✅ Update status kegiatan otomatis sebelum tampilkan
+        $this->updateKegiatanStatus();
+        
+        // ✅ Hitung batas waktu: 1 hari yang lalu dari sekarang
+        $oneDayAgo = now()->subDay();
+        
+        // ✅ Ambil kegiatan "Planned", "Ongoing", dan "Completed" (max 1 hari setelah selesai)
         $kegiatan = KegiatanDonor::with('donasiDarah')
-            ->where('status', 'Planned')
-            ->where('tanggal', '>=', now())
+            ->where(function($query) use ($oneDayAgo) {
+                $query->whereIn('status', ['Planned', 'Ongoing'])
+                    ->orWhere(function($q) use ($oneDayAgo) {
+                        // Completed yang tanggalnya dalam 1 hari terakhir
+                        $q->where('status', 'Completed')
+                            ->where('tanggal', '>=', $oneDayAgo->toDateString());
+                    });
+            })
+            ->orderByRaw("CASE 
+                WHEN status = 'Ongoing' THEN 1 
+                WHEN status = 'Planned' THEN 2 
+                WHEN status = 'Completed' THEN 3 
+                ELSE 4 END") // Ongoing → Planned → Completed
             ->orderBy('tanggal', 'asc')
+            ->orderBy('waktu_mulai', 'asc')
             ->paginate(12);
         
         return view('kegiatan.daftar_kegiatan', compact('kegiatan'));
+    }
+
+    private function updateKegiatanStatus()
+    {
+        $now = now();
+        
+        // 1. ✅ Update "Planned" → "Ongoing" (kegiatan yang sudah dimulai)
+        $kegiatanDimulai = KegiatanDonor::where('status', 'Planned')
+            ->where(function($query) use ($now) {
+                $query->whereDate('tanggal', '<', $now->toDateString())
+                    ->orWhere(function($q) use ($now) {
+                        $q->whereDate('tanggal', '=', $now->toDateString())
+                            ->whereTime('waktu_mulai', '<=', $now->toTimeString());
+                    });
+            })
+            ->get();
+        
+        foreach ($kegiatanDimulai as $kegiatan) {
+            $kegiatan->update(['status' => 'Ongoing']);
+            
+            // ✅ Kirim notifikasi "Kegiatan Dimulai"
+            NotifikasiController::sendActivityStarted($kegiatan);
+        }
+        
+        // 2. ✅ Update "Ongoing" → "Completed" (kegiatan yang sudah selesai)
+        $kegiatanSelesai = KegiatanDonor::where('status', 'Ongoing')
+            ->where(function($query) use ($now) {
+                $query->whereDate('tanggal', '<', $now->toDateString())
+                    ->orWhere(function($q) use ($now) {
+                        $q->whereDate('tanggal', '=', $now->toDateString())
+                            ->whereTime('waktu_selesai', '<=', $now->toTimeString());
+                    });
+            })
+            ->get();
+        
+        foreach ($kegiatanSelesai as $kegiatan) {
+            $kegiatan->update(['status' => 'Completed']);
+            
+            // ✅ Kirim notifikasi "Kegiatan Selesai"
+            NotifikasiController::sendActivityFinished($kegiatan);
+        }
     }
 
     // Public: Detail kegiatan
@@ -32,6 +91,15 @@ class KegiatanDonorController extends Controller
                 $query->whereHas('pendonor.user');
             }, 'donasiDarah.pendonor.user'])
             ->findOrFail($id);
+        
+        // ✅ BLOKIR akses pendonor jika kegiatan Completed > 1 hari
+        if (Auth::check() && Auth::user()->role === 'pendonor') {
+            $oneDayAgo = now()->subDay();
+            
+            if ($kegiatan->status === 'Completed' && $kegiatan->tanggal < $oneDayAgo->toDateString()) {
+                abort(404, 'Kegiatan tidak tersedia');
+            }
+        }
         
         $totalDonor = $kegiatan->donasiDarah->count();
         
@@ -59,6 +127,23 @@ class KegiatanDonorController extends Controller
             }
 
             $kegiatan = KegiatanDonor::findOrFail($id);
+
+            // ✅ BLOKIR pendaftaran jika kegiatan Completed > 1 hari
+            $oneDayAgo = now()->subDay();
+            if ($kegiatan->status === 'Completed' && $kegiatan->tanggal < $oneDayAgo->toDateString()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Kegiatan ini sudah tidak tersedia untuk pendaftaran'
+                ], 403);
+            }
+
+            // ✅ BLOKIR pendaftaran jika kegiatan sudah Completed
+            if ($kegiatan->status === 'Completed') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Kegiatan ini sudah selesai, tidak bisa mendaftar lagi'
+                ], 403);
+            }
 
             // Cek apakah sudah pernah daftar
             $sudahDaftar = DonasiDarah::where('pendonor_id', $user->pendonor->pendonor_id)
@@ -179,10 +264,8 @@ class KegiatanDonorController extends Controller
             $validated['rincian_lokasi'] = '-';
         }
         
-        
-         $kegiatan = KegiatanDonor::create($validated);
+        $kegiatan = KegiatanDonor::create($validated);
         event(new KegiatanDonorCreated($kegiatan));
-        NotifikasiController::sendNewActivityNotification($kegiatan);
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([

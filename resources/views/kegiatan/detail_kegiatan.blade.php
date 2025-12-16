@@ -33,12 +33,12 @@
             </div>
             
             <span class="absolute top-4 right-8 px-4 py-1.5 text-xs font-bold rounded-full shadow-lg
-                @if($kegiatan->status == 'Planned') bg-blue-500
-                @elseif($kegiatan->status == 'Ongoing') bg-green-500
+                @if($kegiatan->status === 'Planned') bg-blue-500
+                @elseif($kegiatan->status === 'Ongoing') bg-green-500
                 @else bg-gray-500
                 @endif text-white">
-                @if($kegiatan->status == 'Planned') Akan Datang
-                @elseif($kegiatan->status == 'Ongoing') Berlangsung
+                @if($kegiatan->status === 'Planned') Akan Datang
+                @elseif($kegiatan->status === 'Ongoing') Berlangsung
                 @else Selesai
                 @endif
             </span>

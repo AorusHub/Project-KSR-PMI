@@ -17,7 +17,7 @@ class DonasiDarah extends Model
         'tanggal_donasi',
         'jenis_donor',
         'lokasi_donor',      // ✅ HARUS ADA INI
-        'volume_darah',
+        'jumlah_kantong',    // ✅ HARUS ADA INI
         'status_donasi',
     ];
 

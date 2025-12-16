@@ -68,12 +68,6 @@ class PermintaanDonorController extends Controller
             ]);
             event(new \App\Events\PermintaanDonorCreated($permintaan));
 
-              // ✅ TAMBAHKAN DI SINI: Kirim notifikasi jika sangat mendesak
-            if ($permintaan->tingkat_urgensi === 'Sangat Mendesak') {
-                NotifikasiController::sendUrgentRequestToAdminStaff($permintaan);
-                NotifikasiController::sendUrgentRequestToDonor($permintaan);
-            }
-
             // Return JSON response untuk AJAX
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
@@ -265,6 +259,7 @@ class PermintaanDonorController extends Controller
         }
     }
 
+
     /**
      * ✅ Update status permintaan (untuk admin & staff)
      */
@@ -286,7 +281,7 @@ class PermintaanDonorController extends Controller
                 ], 403);
             }
 
-            // ✅ UPDATE: Tambah "Failed" di validasi
+            // ✅ Validasi (sudah include "Failed")
             try {
                 $validated = $request->validate([
                     'status_permintaan' => 'required|in:Pending,Approved,Completed,Rejected,Requesting,Responded,Failed'
@@ -303,12 +298,16 @@ class PermintaanDonorController extends Controller
 
             $permintaan = PermintaanDonor::findOrFail($id);
             
+            // ✅ TAMBAHAN: Simpan status lama untuk pengecekan
+            $oldStatus = $permintaan->status_permintaan;
+            
             // ✅ Log sebelum update
             \Log::info('Before update', [
                 'id' => $id,
-                'old_status' => $permintaan->status_permintaan
+                'old_status' => $oldStatus
             ]);
             
+            // ✅ Update status
             $permintaan->status_permintaan = $validated['status_permintaan'];
             $permintaan->save();
             
@@ -318,12 +317,22 @@ class PermintaanDonorController extends Controller
                 'new_status' => $permintaan->status_permintaan
             ]);
 
+            // ✅ TAMBAHAN BARU: Kirim notifikasi ke pendonor jika status jadi "Requesting"
+            if ($oldStatus !== 'Requesting' && $validated['status_permintaan'] === 'Requesting') {
+                // Cek apakah permintaan ini mendesak
+                if (in_array($permintaan->tingkat_urgensi, ['Mendesak', 'Sangat Mendesak'])) {
+                    \Log::info('Sending notification to donors', ['permintaan_id' => $id]);
+                    NotifikasiController::sendRequestingToDonor($permintaan);
+                }
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'Status berhasil diupdate!',
                 'data' => [
                     'id' => $permintaan->permintaan_id,
-                    'status' => $permintaan->status_permintaan
+                    'status' => $permintaan->status_permintaan,
+                    'notification_sent' => ($oldStatus !== 'Requesting' && $validated['status_permintaan'] === 'Requesting') // Info apakah notif terkirim
                 ]
             ]);
 

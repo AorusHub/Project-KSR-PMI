@@ -23,6 +23,7 @@ class AppServiceProvider extends ServiceProvider
             KegiatanDonorCreated::class,
             SendKegiatanDonorNotification::class
         );
+
         // ✅ Event untuk permintaan donor mendesak
         Event::listen(
             PermintaanDonorCreated::class,

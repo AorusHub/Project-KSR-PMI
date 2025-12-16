@@ -314,7 +314,7 @@
                 <td>{{ $donasi->tanggal_donasi->format('d/m/Y') }}</td>
                 <td>{{ $donasi->jenis_donor }}</td>
                 <td>{{ $donasi->lokasi_donor }}</td>
-                <td>{{ $donasi->volume_darah }} ml</td>
+                <td>{{ $donasi->jumlah_darah }} ml</td>
                 <td>
                     @if($donasi->status_donasi == 'Berhasil')
                         <span class="status-badge status-berhasil"> Berhasil</span>

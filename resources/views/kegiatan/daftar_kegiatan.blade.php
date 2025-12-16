@@ -47,14 +47,14 @@
                     
                     {{-- Status Badge --}}
                     <span class="absolute top-4 right-4 px-4 py-1.5 text-xs font-bold rounded-full shadow-lg
-                        @if($item->status == 'Planned') bg-blue-500 text-white
-                        @elseif($item->status == 'Ongoing') bg-green-500 text-white
-                        @elseif($item->status == 'Completed') bg-gray-500 text-white
+                        @if($item->status === 'Planned') bg-blue-500 text-white
+                        @elseif($item->status === 'Ongoing') bg-green-500 text-white
+                        @elseif($item->status === 'Completed') bg-gray-500 text-white
                         @else bg-red-500 text-white
                         @endif">
-                        @if($item->status == 'Planned') Akan Datang
-                        @elseif($item->status == 'Ongoing') Berlangsung
-                        @elseif($item->status == 'Completed') Selesai
+                        @if($item->status === 'Planned') Akan Datang
+                        @elseif($item->status === 'Ongoing') Berlangsung
+                        @elseif($item->status === 'Completed') Selesai
                         @else Dibatalkan
                         @endif
                     </span>
@@ -73,7 +73,7 @@
                         </svg>
                         <div class="flex flex-col">
                             <span class="font-semibold">{{ \Carbon\Carbon::parse($item->tanggal)->locale('id')->isoFormat('D MMMM YYYY') }}</span>
-                            <span class="text-gray-600 mt-0.5">{{ \Carbon\Carbon::parse($item->waktu_mulai)->format('H:i') }} - {{ \Carbon\Carbon::parse($item->waktu_selesai)->format('H:i') }} WIB</span>
+                            <span class="text-gray-600 mt-0.5">{{ \Carbon\Carbon::parse($item->waktu_mulai)->format('H:i') }} - {{ \Carbon\Carbon::parse($item->waktu_selesai)->format('H:i') }} WITA</span>
                         </div>
                     </div>
 

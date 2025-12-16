@@ -16,23 +16,38 @@ class SendPermintaanDonorNotification
             return; // Skip jika tidak mendesak
         }
 
-        // ✅ Hitung total permintaan mendesak yang masih Pending/Requesting
+        // ✅ Hitung total permintaan mendesak yang masih Pending
         $totalMendesak = PermintaanDonor::whereIn('tingkat_urgensi', ['Mendesak', 'Sangat Mendesak'])
-            ->whereIn('status_permintaan', ['Pending', 'Requesting'])
+            ->where('status_permintaan', 'Pending')
             ->count();
 
-        // ✅ Kirim notifikasi ke SEMUA PENDONOR
-        $pendonors = User::where('role', 'pendonor')->get();
+        // ✅ HANYA kirim ke ADMIN & STAF (bukan pendonor)
+        $adminStaff = User::whereIn('role', ['admin', 'staf'])->get();
 
-        foreach ($pendonors as $pendonor) {
-            Notifikasi::create([
-                'user_id' => $pendonor->user_id,
-                'judul_notif' => 'Permintaan Donor Mendesak!',
-                'jenis_notifikasi' => 'Permintaan Darurat',
-                'pesan_notif' => "Ada {$totalMendesak} permintaan donor mendesak yang membutuhkan bantuan Anda. Klik untuk lihat detail.",
-                'status_baca' => false,
-                'tanggal_notifikasi' => now(),
-            ]);
+        foreach ($adminStaff as $user) {
+            // ✅ Cari notifikasi BELUM DIBACA yang sudah ada
+            $existingNotif = Notifikasi::where('user_id', $user->user_id)
+                ->where('jenis_notifikasi', 'Permintaan Darurat')
+                ->where('status_baca', false)
+                ->first();
+            
+            if ($existingNotif) {
+                // ✅ UPDATE notifikasi yang ada
+                $existingNotif->update([
+                    'pesan_notif' => "🚨 Terdapat {$totalMendesak} permintaan donor mendesak yang membutuhkan perhatian segera!",
+                    'tanggal_notifikasi' => now(),
+                ]);
+            } else {
+                // ✅ BUAT notifikasi baru
+                Notifikasi::create([
+                    'user_id' => $user->user_id,
+                    'judul_notif' => 'Permintaan Donor Mendesak!',
+                    'jenis_notifikasi' => 'Permintaan Darurat',
+                    'pesan_notif' => "🚨 Terdapat {$totalMendesak} permintaan donor mendesak yang membutuhkan perhatian segera!",
+                    'status_baca' => false,
+                    'tanggal_notifikasi' => now(),
+                ]);
+            }
         }
     }
 }

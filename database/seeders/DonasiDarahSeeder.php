@@ -1,4 +1,5 @@
 <?php
+
 // filepath: c:\xampp\htdocs\ksr-pmi\Project-KSR-PMI\database\seeders\DonasiDarahSeeder.php
 
 namespace Database\Seeders;
@@ -63,7 +64,7 @@ class DonasiDarahSeeder extends Seeder
                     $pendonorUsed[$bulan][] = $selectedPendonor->pendonor_id;
                     
                     // Status donasi (95% berhasil, 5% gagal)
-                    $statusDonasi = rand(1, 100) <= 95 ? 'Berhasil' : 'Gagal';
+                    $statusDonasi = rand(1, 100) <= 95 ? 'Berhasil' : 'Dibatalkan';
                     
                     // Tanggal donasi = tanggal kegiatan
                     $tanggalDonasi = Carbon::parse($keg->tanggal);
@@ -71,9 +72,9 @@ class DonasiDarahSeeder extends Seeder
                     // Jenis donor (90% sukarela, 10% pengganti)
                     $jenisDonor = rand(1, 100) <= 90 ? 'Sukarela' : 'Pengganti';
                     
-                    // Volume darah (standar 350ml dengan variasi)
-                    $volumeOptions = [250, 350, 350, 350, 450]; // 350ml lebih sering muncul
-                    $volumeDarah = $volumeOptions[array_rand($volumeOptions)];
+                    // ✅ Jumlah kantong (1-2 kantong, mayoritas 1 kantong)
+                    $jumlahKantongOptions = [1, 1, 1, 1, 2]; // 80% = 1 kantong, 20% = 2 kantong
+                    $jumlahKantong = $jumlahKantongOptions[array_rand($jumlahKantongOptions)];
                     
                     $donasi[] = [
                         'pendonor_id' => $selectedPendonor->pendonor_id,
@@ -82,7 +83,7 @@ class DonasiDarahSeeder extends Seeder
                         'kegiatan_id' => $keg->kegiatan_id,
                         'permintaan_id' => null,
                         'lokasi_donor' => $keg->lokasi,
-                        'volume_darah' => $volumeDarah,
+                        'jumlah_kantong' => $jumlahKantong,
                         'status_donasi' => $statusDonasi,
                         'created_at' => $tanggalDonasi->setTime(rand(8, 14), rand(0, 59)),
                         'updated_at' => $tanggalDonasi->copy()->addMinutes(rand(30, 120)),

@@ -17,8 +17,8 @@ return new class extends Migration
             $table->foreignId('kegiatan_id')->nullable()->constrained('kegiatan_donor', 'kegiatan_id')->onDelete('set null');
             $table->foreignId('permintaan_id')->nullable()->constrained('permintaan_donor', 'permintaan_id')->onDelete('set null');
             $table->string('lokasi_donor');
-            $table->integer('volume_darah')->default(350); // ✅ TAMBAHKAN INI (dalam ml)
-            $table->enum('status_donasi', ['Terdaftar', 'Berhasil', 'Gagal', 'Dibatalkan']);
+            $table->integer('jumlah_kantong')->default(1); // ✅ TAMBAHKAN INI (dalam ml)
+            $table->enum('status_donasi', ['Terdaftar', 'Berhasil', 'Dibatalkan']);
             $table->timestamps();
         });
     }
