@@ -1,0 +1,34 @@
+{
+  "kegiatan": {
+    "valid": {
+      "nama_kegiatan": "Test Kegiatan Staff",
+      "tanggal": "2025-12-25",
+      "lokasi": "PMI Makassar"
+    }
+  },
+  "donor": {
+    "pending": {
+      "nama": "Test Donor Pending",
+      "email": "pending@test.com",
+      "nik": "1234567890123456"
+    }
+  },
+  "pendaftaran": {
+    "valid": {
+      "kegiatan_id": 1,
+      "donor_id": 1
+    }
+  },
+  "hasil_donor": {
+    "success": {
+      "status": "Success",
+      "kantong_darah": "1",
+      "catatan": "Donor berhasil, kondisi baik"
+    },
+    "failed": {
+      "status": "Failed",
+      "kantong_darah": "0",
+      "catatan": "Tekanan darah tinggi"
+    }
+  }
+}

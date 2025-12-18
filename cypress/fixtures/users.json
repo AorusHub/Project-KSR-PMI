@@ -1,0 +1,41 @@
+{
+  "admin": {
+    "email": "admin@pmi.com",
+    "password": "admin123",
+    "name": "Admin KSR PMI"
+  },
+  "donor": {
+    "email": "pendonor1@unhas.ac.id",
+    "password": "pendonor123",
+    "name": "Test Donor",
+    "phone": "081234567890",
+    "golongan_darah": "A",
+    "tanggal_lahir": "1995-05-15",
+    "alamat": "Jl. Test No. 123, Makassar"
+  },
+  "newDonor": {
+    "name": "Donor Baru Test",
+    "email": "newdonor@test.com",
+    "password": "password123",
+    "phone": "082345678901",
+    "golongan_darah": "B",
+    "tanggal_lahir": "1998-08-20",
+    "alamat": "Jl. Baru No. 456, Makassar"
+  },
+  "invalidEmail": {
+    "email": "invalidemail",
+    "password": "password123"
+  },
+  "existingEmail": {
+    "email": "donor@test.com",
+    "password": "newpassword123"
+  },
+  "staff": {
+    "email": "staf@pmi.com",
+    "password": "staf123",
+    "name": "Staff PMI"
+  }
+
+
+
+}

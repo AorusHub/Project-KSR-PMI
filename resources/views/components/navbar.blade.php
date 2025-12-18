@@ -55,56 +55,87 @@
                     @endphp
                     
                     {{-- ✅ NOTIFICATION BELL DENGAN REAL-TIME POLLING --}}
+                    {{-- ✅ NOTIFICATION BELL DENGAN REAL-TIME POLLING --}}
                     <div class="relative" x-data="notificationSystem()">
                         <button @click="toggleNotif()" class="relative p-1.5 sm:p-2 text-gray-600 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors focus:outline-none">
                             <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
                             </svg>
+                            {{-- ✅ Badge Responsif --}}
                             <span x-show="unreadCount > 0" 
-                                  x-text="unreadCount" 
-                                  class="absolute -top-1 -right-1 sm:top-0 sm:right-0 inline-flex items-center justify-center px-1.5 py-0.5 sm:px-2 sm:py-1 text-[10px] sm:text-xs font-bold leading-none text-white transform sm:translate-x-1/2 sm:-translate-y-1/2 bg-red-600 rounded-full">
+                                  x-text="unreadCount > 99 ? '99+' : unreadCount" 
+                                  class="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 inline-flex items-center justify-center min-w-[18px] h-[18px] sm:min-w-[20px] sm:h-[20px] px-1 text-[9px] sm:text-[10px] font-bold leading-none text-white bg-red-600 dark:bg-red-500 rounded-full border-2 border-white dark:border-gray-800">
                             </span>
                         </button>
 
-                        {{-- Notification Dropdown --}}
+                        {{-- ✅ Notification Dropdown RESPONSIF --}}
                         <div x-show="notifOpen" 
                              @click.away="notifOpen = false"
-                             x-transition
-                             class="absolute right-0 mt-2 w-[90vw] sm:w-80 bg-white dark:bg-gray-800 rounded-lg shadow-xl py-2 z-50 border border-gray-200 dark:border-gray-700 max-h-[80vh] sm:max-h-96 overflow-y-auto">
+                             x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="opacity-0 scale-95 -translate-y-2"
+                             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                             x-transition:leave="transition ease-in duration-150"
+                             x-transition:leave-start="opacity-100 scale-100"
+                             x-transition:leave-end="opacity-0 scale-95"
+                             class="fixed sm:absolute left-2 right-2 sm:left-auto sm:right-0 top-16 sm:top-auto sm:mt-2 w-auto sm:w-96 bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 max-h-[calc(100vh-80px)] sm:max-h-[500px] flex flex-col z-50">
                             
-                            <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                                <h3 class="text-sm font-bold text-gray-800 dark:text-white">Notifikasi</h3>
-                                <button @click="markAllRead()" x-show="unreadCount > 0" class="text-xs text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-500 font-medium">
-                                    Tandai semua dibaca
-                                </button>
+                            {{-- Header --}}
+                            <div class="px-3 sm:px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center flex-shrink-0 bg-white dark:bg-gray-800 rounded-t-lg sticky top-0">
+                                <h3 class="text-sm sm:text-base font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                                    <svg class="w-4 h-4 sm:w-5 sm:h-5 text-red-600 dark:text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6z"/>
+                                    </svg>
+                                    Notifikasi
+                                    <span x-show="unreadCount > 0" x-text="'(' + unreadCount + ')'" class="text-xs text-red-600 dark:text-red-400"></span>
+                                </h3>
+                                <div class="flex items-center gap-2">
+                                    <button @click="markAllRead()" x-show="unreadCount > 0" class="text-[10px] sm:text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium px-2 py-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors whitespace-nowrap">
+                                        ✓ Tandai semua
+                                    </button>
+                                    <button @click="notifOpen = false" class="sm:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-1">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            {{-- Loading --}}
+                            <div x-show="loading" class="flex items-center justify-center py-12">
+                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 dark:border-red-400"></div>
                             </div>
 
                             {{-- Notification Items --}}
-                            <div x-show="!loading" class="divide-y divide-gray-100 dark:divide-gray-700">
+                            <div x-show="!loading" class="overflow-y-auto flex-1 divide-y divide-gray-100 dark:divide-gray-700">
+                                {{-- Empty State --}}
                                 <template x-if="notifications.length === 0">
-                                    <div class="px-4 py-8 text-center">
-                                        <svg class="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                                    <div class="px-4 py-12 text-center">
+                                        <svg class="w-16 h-16 sm:w-20 sm:h-20 text-gray-300 dark:text-gray-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
                                         </svg>
-                                        <p class="text-sm text-gray-500 dark:text-gray-400">Tidak ada notifikasi</p>
+                                        <p class="text-sm sm:text-base font-medium text-gray-500 dark:text-gray-400 mb-1">Tidak ada notifikasi</p>
+                                        <p class="text-xs text-gray-400 dark:text-gray-500">Notifikasi akan muncul di sini</p>
                                     </div>
                                 </template>
 
+                                {{-- Notification List --}}
                                 <template x-for="notif in notifications" :key="notif.id">
                                     <a :href="notif.url" 
-                                    @click="markAsRead(notif.id)"
-                                    class="block px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" 
-                                    :class="notif.dibaca ? 'bg-white dark:bg-gray-800' : 'bg-blue-50 dark:bg-blue-900/20'">
-                                        <div class="flex items-start space-x-3">
+                                       @click="markAsRead(notif.id)"
+                                       class="block px-3 sm:px-4 py-3 sm:py-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all active:bg-gray-100 dark:active:bg-gray-700" 
+                                       :class="notif.dibaca ? 'bg-white dark:bg-gray-800' : 'bg-blue-50/50 dark:bg-blue-900/10 border-l-4 border-blue-500 dark:border-blue-400'">
+                                        
+                                        <div class="flex items-start gap-2 sm:gap-3">
+                                            {{-- Icon --}}
                                             <div class="flex-shrink-0">
-                                                <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center"
+                                                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center"
                                                     :class="{
                                                         'bg-blue-100 dark:bg-blue-900/30': notif.icon_type === 'blue',
                                                         'bg-green-100 dark:bg-green-900/30': notif.icon_type === 'green',
                                                         'bg-yellow-100 dark:bg-yellow-900/30': notif.icon_type === 'yellow',
                                                         'bg-red-100 dark:bg-red-900/30': notif.icon_type === 'red'
                                                     }">
-                                                    <svg class="w-4 h-4 sm:w-5 sm:h-5" 
+                                                    <svg class="w-5 h-5" 
                                                         :class="{
                                                             'text-blue-600 dark:text-blue-400': notif.icon_type === 'blue',
                                                             'text-green-600 dark:text-green-400': notif.icon_type === 'green',
@@ -116,19 +147,31 @@
                                                     </svg>
                                                 </div>
                                             </div>
+
+                                            {{-- Content --}}
                                             <div class="flex-1 min-w-0">
-                                                <p class="text-xs sm:text-sm font-medium text-gray-900 dark:text-white" x-text="notif.jenis"></p>
-                                                <p class="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mt-1" x-text="notif.isi"></p>
-                                                <p class="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 mt-1" x-text="notif.waktu"></p>
+                                                <p class="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white mb-1 leading-tight" x-text="notif.jenis"></p>
+                                                <p class="text-[11px] sm:text-xs text-gray-600 dark:text-gray-400 mb-1.5 leading-snug line-clamp-2" x-text="notif.isi"></p>
                                                 
-                                                {{-- ✅ TOMBOL TANDAI SUDAH DIBACA --}}
-                                                <button x-show="!notif.dibaca"
-                                                        @click.stop.prevent="markAsRead(notif.id)"
-                                                        class="mt-2 text-[10px] sm:text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium hover:underline transition-colors">
-                                                    ✓ Tandai sudah dibaca
-                                                </button>
+                                                {{-- Time & Action --}}
+                                                <div class="flex items-center justify-between gap-2 mt-2">
+                                                    <span class="text-[10px] sm:text-xs text-gray-500 dark:text-gray-500 flex items-center gap-1">
+                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                        </svg>
+                                                        <span x-text="notif.waktu"></span>
+                                                    </span>
+                                                    
+                                                    <button x-show="!notif.dibaca"
+                                                            @click.stop.prevent="markAsRead(notif.id)"
+                                                            class="text-[10px] sm:text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium px-2 py-0.5 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors whitespace-nowrap">
+                                                        ✓ Tandai dibaca
+                                                    </button>
+                                                </div>
                                             </div>
-                                            <span x-show="!notif.dibaca" class="flex-shrink-0 w-2 h-2 bg-red-500 rounded-full"></span>
+
+                                            {{-- Unread Dot --}}
+                                            <span x-show="!notif.dibaca" class="flex-shrink-0 w-2 h-2 sm:w-2.5 sm:h-2.5 bg-blue-600 dark:bg-blue-500 rounded-full mt-1"></span>
                                         </div>
                                     </a>
                                 </template>

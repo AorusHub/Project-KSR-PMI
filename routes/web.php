@@ -18,6 +18,7 @@ use App\Http\Controllers\PendonorController;
 use App\Http\Controllers\StokDarahController;
 use App\Http\Controllers\VerifikasiKelayakanController;
 use App\Http\Controllers\NotifikasiController;
+use App\Http\Controllers\DonasiDarahController;
 
 /*
 |--------------------------------------------------------------------------
@@ -179,11 +180,14 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/managemen-kegiatan/{id}', [KegiatanDonorController::class, 'destroy'])
         ->name('managemen.kegiatan.destroy'); 
     
+    
     // ✅ PESERTA KEGIATAN
-    Route::get('/kegiatan/{id}/peserta', [KegiatanDonorController::class, 'peserta'])
+    Route::get('/kegiatan/{id}/peserta', [DonasiDarahController::class, 'partisipan'])
         ->name('kegiatan.peserta');
-    Route::get('/kegiatan/{id}/peserta/search', [KegiatanDonorController::class, 'searchPeserta'])
+    Route::get('/kegiatan/{id}/peserta/search', [DonasiDarahController::class, 'search'])
         ->name('kegiatan.peserta.search');
+    Route::put('/donasi/{id}/update-status', [DonasiDarahController::class, 'updateStatus'])
+        ->name('donasi.updateStatus');
     
     // ✅ MANAJEMEN PERMINTAAN DARURAT
     Route::prefix('managemen-permintaan-darurat')->name('managemen.permintaan-darurat.')->group(function () {
@@ -192,6 +196,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/cek-stok', [PermintaanDonorController::class, 'cekStok'])->name('cek-stok');
         Route::post('/{id}/proses', [PermintaanDonorController::class, 'prosesPermintaan'])->name('proses');
         Route::post('/{id}/update-status', [PermintaanDonorController::class, 'updateStatus'])->name('update-status');
+        Route::post('/respon/{id}/approve', [PermintaanDonorController::class, 'approveResponden'])->name('approve');
+        Route::post('/respon/{id}/reject', [PermintaanDonorController::class, 'rejectResponden'])->name('reject');
     });
 
     // ✅ STOK DARAH

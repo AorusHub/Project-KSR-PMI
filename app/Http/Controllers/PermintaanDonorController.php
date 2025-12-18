@@ -63,7 +63,6 @@ class PermintaanDonorController extends Controller
                 'nama_kontak' => $validated['nama_kontak'],
                 'no_hp' => $validated['no_hp'],
                 'hubungan' => $validated['hubungan'],
-                'kontak_keluarga' => $validated['no_hp'],
                 'status_permintaan' => 'Pending',
             ]);
             event(new \App\Events\PermintaanDonorCreated($permintaan));
@@ -104,12 +103,11 @@ class PermintaanDonorController extends Controller
      */
     public function managemenIndex(Request $request)
     {
-        // ✅ Authorization: Hanya admin dan staff yang bisa akses
         if (!in_array(Auth::user()->role, ['admin', 'staf'])) {
             abort(403, 'Unauthorized action.');
         }
 
-        $query = PermintaanDonor::query();
+        $query = PermintaanDonor::with('responPendonor'); // ✅ EAGER LOAD
 
         // Filter berdasarkan status
         if ($request->filled('status') && $request->status !== 'Semua Status') {
@@ -121,13 +119,13 @@ class PermintaanDonorController extends Controller
             $query->where('tingkat_urgensi', $request->urgensi);
         }
 
-        // Search berdasarkan nama pasien atau golongan darah
+        // Search
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('nama_pasien', 'like', "%{$search}%")
-                  ->orWhere('gol_darah', 'like', "%{$search}%")
-                  ->orWhere('nomor_pelacakan', 'like', "%{$search}%");
+                ->orWhere('gol_darah', 'like', "%{$search}%")
+                ->orWhere('nomor_pelacakan', 'like', "%{$search}%");
             });
         }
 
@@ -138,7 +136,7 @@ class PermintaanDonorController extends Controller
         $diproses = PermintaanDonor::where('status_permintaan', 'Approved')->count();
         $terpenuhi = PermintaanDonor::where('status_permintaan', 'Completed')->count();
 
-        // Get paginated data
+        // ✅ Get paginated data WITH RELATION
         $permintaan = $query->orderBy('created_at', 'desc')->paginate(10);
 
         return view('dashboard.dev.managemen-permintaan-darurat', compact(
@@ -169,21 +167,52 @@ class PermintaanDonorController extends Controller
      * ✅ Get detail permintaan untuk modal (AJAX)
      */
     public function getDetail($id)
-    {
-        try {
-            $permintaan = PermintaanDonor::findOrFail($id);
-
-            return response()->json([
-                'success' => true,
-                'data' => $permintaan
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Data tidak ditemukan'
-            ], 404);
-        }
+{
+    try {
+        $permintaan = PermintaanDonor::findOrFail($id);
+        
+        // ✅ AMBIL respon_pendonor
+        $responPendonor = DB::table('respon_pendonor')
+            ->where('permintaan_id', $id)
+            ->where('status', 'pending')
+            ->select('id', 'nama_pendonor', 'tgl_lahir', 'gol_darah', 'no_telp')
+            ->get();
+        
+        \Log::info('Get Detail Response:', [
+            'permintaan_id' => $id,
+            'status' => $permintaan->status_permintaan,
+            'respon_count' => $responPendonor->count(),
+            'respon_data' => $responPendonor->toArray()
+        ]);
+        
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'permintaan_id' => $permintaan->permintaan_id,
+                'nomor_pelacakan' => $permintaan->nomor_pelacakan,
+                'nama_pasien' => $permintaan->nama_pasien,
+                'gol_darah' => $permintaan->gol_darah,
+                'jumlah_kantong' => $permintaan->jumlah_kantong,
+                'responden' => $permintaan->responden,
+                'darah_didapat' => $permintaan->darah_didapat,
+                'tempat_rawat' => $permintaan->tempat_rawat,
+                'riwayat' => $permintaan->riwayat,
+                'jenis_permintaan' => $permintaan->jenis_permintaan,
+                'tingkat_urgensi' => $permintaan->tingkat_urgensi,
+                'status_permintaan' => $permintaan->status_permintaan,
+                'nama_kontak' => $permintaan->nama_kontak,
+                'no_hp' => $permintaan->no_hp,
+                'hubungan' => $permintaan->hubungan,
+                'created_at' => $permintaan->created_at,
+                'pendonor_merespons' => $responPendonor->toArray(), // ✅ INI YANG PENTING
+            ]
+        ]);
+        
+    } catch (\Exception $e) {
+        \Log::error('Error getDetail:', ['message' => $e->getMessage()]);
+        return response()->json(['success' => false, 'message' => 'Data tidak ditemukan'], 404);
     }
+}
 
     /**
      * ✅ Cek stok darah sebelum proses
@@ -259,6 +288,36 @@ class PermintaanDonorController extends Controller
         }
     }
 
+    public function updateStatusToRequesting($id)
+{
+    try {
+        DB::beginTransaction();
+        
+        $permintaan = PermintaanDonor::findOrFail($id);
+        $permintaan->status_permintaan = 'Requesting';
+        $permintaan->save();
+        
+        // ✅ AMBIL respon_pendonor
+        $responPendonor = DB::table('respon_pendonor')
+            ->where('permintaan_id', $id)
+            ->where('status', 'pending')
+            ->select('id', 'nama_pendonor', 'tgl_lahir', 'gol_darah', 'no_telp')
+            ->get();
+        
+        DB::commit();
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Status berhasil diupdate ke Requesting',
+            'pendonor_merespons' => $responPendonor->toArray() // ✅ INI YANG PENTING
+        ]);
+        
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+    }
+}
+
 
     /**
      * ✅ Update status permintaan (untuk admin & staff)
@@ -298,7 +357,7 @@ class PermintaanDonorController extends Controller
 
             $permintaan = PermintaanDonor::findOrFail($id);
             
-            // ✅ TAMBAHAN: Simpan status lama untuk pengecekan
+            // ✅ Simpan status lama untuk pengecekan
             $oldStatus = $permintaan->status_permintaan;
             
             // ✅ Log sebelum update
@@ -317,12 +376,29 @@ class PermintaanDonorController extends Controller
                 'new_status' => $permintaan->status_permintaan
             ]);
 
-            // ✅ TAMBAHAN BARU: Kirim notifikasi ke pendonor jika status jadi "Requesting"
-            if ($oldStatus !== 'Requesting' && $validated['status_permintaan'] === 'Requesting') {
-                // Cek apakah permintaan ini mendesak
-                if (in_array($permintaan->tingkat_urgensi, ['Mendesak', 'Sangat Mendesak'])) {
+            // ✅ JIKA STATUS JADI "REQUESTING", AMBIL DATA PENDONOR YANG MERESPONS
+            $pendonorMerespons = [];
+            if ($validated['status_permintaan'] === 'Requesting') {
+                // Query pendonor yang sudah respond ke permintaan ini
+                $pendonorMerespons = PermintaanDonor::where('permintaan_id', $id)
+                    ->whereNotNull('nama_pendonor_respond')
+                    ->select(
+                        'permintaan_id as id',
+                        'nama_pendonor_respond as nama',
+                        'gol_darah_pendonor as golongan_darah',
+                        'tgl_lahir_pendonor as tanggal_lahir',
+                        'no_telp_pendonor as no_telepon',
+                        'tanggal_respond'
+                    )
+                    ->get()
+                    ->toArray();
+
+                // ✅ Kirim notifikasi ke pendonor jika permintaan mendesak
+                if ($oldStatus !== 'Requesting' && in_array($permintaan->tingkat_urgensi, ['Mendesak', 'Sangat Mendesak'])) {
                     \Log::info('Sending notification to donors', ['permintaan_id' => $id]);
-                    NotifikasiController::sendRequestingToDonor($permintaan);
+                    
+                    // Kirim notifikasi (uncomment jika NotifikasiController sudah ready)
+                    // NotifikasiController::sendRequestingToDonor($permintaan);
                 }
             }
 
@@ -332,8 +408,9 @@ class PermintaanDonorController extends Controller
                 'data' => [
                     'id' => $permintaan->permintaan_id,
                     'status' => $permintaan->status_permintaan,
-                    'notification_sent' => ($oldStatus !== 'Requesting' && $validated['status_permintaan'] === 'Requesting') // Info apakah notif terkirim
-                ]
+                    'notification_sent' => ($oldStatus !== 'Requesting' && $validated['status_permintaan'] === 'Requesting')
+                ],
+                'pendonor_merespons' => $pendonorMerespons // ✅ KIRIM DATA PENDONOR KE FRONTEND
             ]);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
@@ -382,18 +459,30 @@ class PermintaanDonorController extends Controller
      */
     public function darahDarurat(Request $request)
     {
-        $search = $request->input('search');
-        
-        // ✅ Query permintaan darah dengan status "Requesting" 
-        $permintaanDarurat = PermintaanDonor::where('status_permintaan', 'Requesting')
-            ->when($search, function($query) use ($search) {
-                $query->where('nama_pasien', 'like', "%{$search}%")
-                    ->orWhere('gol_darah', 'like', "%{$search}%")
-                    ->orWhere('nomor_pelacakan', 'like', "%{$search}%");
-            })
-            ->orderByRaw("FIELD(tingkat_urgensi, 'Sangat Mendesak', 'Mendesak', 'Normal')")
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+        $query = PermintaanDonor::query()
+            ->whereIn('status_permintaan', ['Requesting']);
+
+        // ✅ FILTER: Search
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nama_pasien', 'like', '%' . $search . '%')
+                ->orWhere('gol_darah', 'like', '%' . $search . '%')
+                ->orWhere('nomor_pelacakan', 'like', '%' . $search . '%');
+            });
+        }
+
+        // ✅ FILTER: Tingkat Urgensi
+        if ($request->filled('tingkat_urgensi')) {
+            $query->where('tingkat_urgensi', $request->tingkat_urgensi);
+        }
+
+        // ✅ SORTING
+        $query->orderByRaw("FIELD(tingkat_urgensi, 'Sangat Mendesak', 'Mendesak', 'Normal')")
+            ->orderBy('created_at', 'desc');
+
+        // ✅ PAGINATION (TANPA JOIN, langsung ambil kolom responden)
+        $permintaanDarurat = $query->paginate(10)->withQueryString();
         
         return view('dashboard.pendonor.permintaan-darah', compact('permintaanDarurat'));
     }
@@ -401,28 +490,35 @@ class PermintaanDonorController extends Controller
     /**
      * ✅ Respond permintaan darah darurat (pendonor)
      */
+    
     public function respondDarurat(Request $request, $id)
     {
         try {
             $permintaan = PermintaanDonor::findOrFail($id);
-            $pendonor = auth()->user()->pendonor;
+            $user = auth()->user();
             
-            if (!$pendonor) {
+            // ✅ CEK apakah responden sudah penuh
+            if ($permintaan->responden >= $permintaan->jumlah_kantong) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Anda tidak memiliki akses sebagai pendonor'
-                ], 403);
-            }
-            
-            // ✅ CEK apakah permintaan ini sudah direspond
-            if ($permintaan->nama_pendonor_respond) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Permintaan ini sudah direspons oleh pendonor lain'
+                    'message' => 'Permintaan ini sudah terpenuhi (responden penuh)'
                 ], 400);
             }
             
-            // ✅ Validasi input
+            // ✅ CEK apakah user sudah pernah respond ke permintaan ini
+            $sudahRespond = DB::table('respon_pendonor')
+                ->where('permintaan_id', $id)
+                ->where('user_id', $user->id)
+                ->exists();
+                
+            if ($sudahRespond) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda sudah merespons permintaan ini sebelumnya'
+                ], 400);
+            }
+            
+            // ✅ Validasi - Data sudah auto-fill dari user profile
             $validated = $request->validate([
                 'nama_pendonor' => 'required|string|max:255',
                 'tgl_lahir' => 'required|date',
@@ -430,38 +526,207 @@ class PermintaanDonorController extends Controller
                 'no_telp' => 'required|string|min:10|max:15'
             ]);
             
-            // ✅ UPDATE permintaan dengan data pendonor yang merespons
-            $permintaan->update([
-                'nama_pendonor_respond' => $validated['nama_pendonor'],
-                'tgl_lahir_pendonor' => $validated['tgl_lahir'],
-                'gol_darah_pendonor' => $validated['gol_darah'],
-                'no_telp_pendonor' => $validated['no_telp'],
-                'tanggal_respond' => now(),
-                'status_permintaan' => 'Responded' // Update status
-            ]);
+            DB::beginTransaction();
             
-            return response()->json([
-                'success' => true,
-                'message' => 'Terima kasih! Respons Anda telah berhasil dikirim. Tim kami akan segera menghubungi Anda.'
-            ]);
-            
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validasi gagal',
-                'errors' => $e->errors()
-            ], 422);
+            try {
+                // ✅ SIMPAN data respons ke tabel respon_pendonor (tracking siapa yang respond)
+                DB::table('respon_pendonor')->insert([
+                    'permintaan_id' => $id,
+                    'user_id' => $user->user_id,
+                    'pendonor_id' => $user->pendonor->pendonor_id ?? null,
+                    'nama_pendonor' => $validated['nama_pendonor'],
+                    'tgl_lahir' => $validated['tgl_lahir'],
+                    'gol_darah' => $validated['gol_darah'],
+                    'no_telp' => $validated['no_telp'],
+                    'status' => 'pending',
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+                
+                // ✅ INCREMENT kolom responden (+1)
+                $permintaan->increment('responden');
+                
+                // ✅ AUTO UPDATE STATUS jika responden = jumlah_kantong
+                if ($permintaan->responden >= $permintaan->jumlah_kantong) {
+                    $permintaan->update(['status_permintaan' => 'Responded']);
+                }
+                
+                DB::commit();
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Terima kasih! Respons Anda telah berhasil dikirim.',
+                    'responden_count' => $permintaan->responden,
+                    'status' => $permintaan->status_permintaan
+                ]);
+                
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw $e;
+            }
             
         } catch (\Exception $e) {
             \Log::error('Error respond permintaan darurat:', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'message' => $e->getMessage()
             ]);
             
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    public function showDetail($id)
+    {
+        try {
+            $permintaan = PermintaanDonor::findOrFail($id);
+            
+            // ✅ FIX: Sesuaikan nama kolom dengan database Anda
+            $pendonorMerespons = [];
+            if (in_array($permintaan->status_permintaan, ['Requesting', 'Responded'])) {
+                $pendonorMerespons = DB::table('respon_pendonor')
+                    ->where('permintaan_id', $id)
+                    ->where('status', 'pending') // ✅ Filter yang status masih pending
+                    ->select(
+                        'id',
+                        'nama_pendonor',  // ✅ Kolom sudah benar
+                        'tgl_lahir',      // ✅ Kolom sudah benar
+                        'gol_darah',      // ✅ Kolom sudah benar
+                        'no_telp'         // ✅ Kolom sudah benar
+                    )
+                    ->get()
+                    ->toArray();
+            }
+            
+            // ✅ Debug log
+            \Log::info('Show Detail Debug:', [
+                'permintaan_id' => $id,
+                'status' => $permintaan->status_permintaan,
+                'pendonor_count' => count($pendonorMerespons),
+                'pendonor_data' => $pendonorMerespons
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'permintaan_id' => $permintaan->permintaan_id,
+                    'nomor_pelacakan' => $permintaan->nomor_pelacakan,
+                    'nama_pasien' => $permintaan->nama_pasien,
+                    'gol_darah' => $permintaan->gol_darah,
+                    'jumlah_kantong' => $permintaan->jumlah_kantong,
+                    'responden' => $permintaan->responden,
+                    'darah_didapat' => $permintaan->darah_didapat,
+                    'tempat_rawat' => $permintaan->tempat_rawat,
+                    'riwayat' => $permintaan->riwayat,
+                    'jenis_permintaan' => $permintaan->jenis_permintaan,
+                    'tingkat_urgensi' => $permintaan->tingkat_urgensi,
+                    'status_permintaan' => $permintaan->status_permintaan,
+                    'nama_kontak' => $permintaan->nama_kontak,
+                    'no_hp' => $permintaan->no_hp,
+                    'hubungan' => $permintaan->hubungan,
+                    'created_at' => $permintaan->created_at,
+                    'pendonor_merespons' => $pendonorMerespons,
+                ]
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error showDetail:', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine()
+            ]);
+            return response()->json(['success' => false, 'message' => 'Data tidak ditemukan'], 404);
+        }
+    }
+
+    /**
+     * ✅ APPROVE PENDONOR - darah_didapat +1
+     */
+    public function approveResponden($responsId)
+    {
+        try {
+            DB::beginTransaction();
+            
+            $respons = DB::table('respon_pendonor')->where('id', $responsId)->first();
+            
+            if (!$respons) {
+                return response()->json(['success' => false, 'message' => 'Respons tidak ditemukan'], 404);
+            }
+            
+            // Update status respons jadi approved
+            DB::table('respon_pendonor')
+                ->where('id', $responsId)
+                ->update(['status' => 'approved', 'updated_at' => now()]);
+            
+            $permintaan = PermintaanDonor::findOrFail($respons->permintaan_id);
+            
+            // ✅ INCREMENT darah_didapat (+1)
+            $darahDidapat = $permintaan->darah_didapat + 1;
+            $permintaan->darah_didapat = $darahDidapat;
+            
+            // ✅ AUTO UPDATE STATUS jika darah_didapat >= jumlah_kantong
+            if ($darahDidapat >= $permintaan->jumlah_kantong) {
+                $permintaan->status_permintaan = 'Completed';
+            }
+            
+            $permintaan->save();
+            
+            DB::commit();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Pendonor berhasil diapprove',
+                'darah_didapat' => $darahDidapat,
+                'status' => $permintaan->status_permintaan
+            ]);
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * ✅ REJECT PENDONOR - Hapus data & responden -1
+     */
+    public function rejectResponden($responsId)
+    {
+        try {
+            DB::beginTransaction();
+            
+            $respons = DB::table('respon_pendonor')->where('id', $responsId)->first();
+            
+            if (!$respons) {
+                return response()->json(['success' => false, 'message' => 'Respons tidak ditemukan'], 404);
+            }
+            
+            // ✅ HAPUS DATA RESPONS
+            DB::table('respon_pendonor')->where('id', $responsId)->delete();
+            
+            $permintaan = PermintaanDonor::findOrFail($respons->permintaan_id);
+            
+            // ✅ DECREMENT responden (-1)
+            if ($permintaan->responden > 0) {
+                $permintaan->decrement('responden');
+            }
+            
+            // ✅ AUTO UPDATE STATUS jadi Requesting
+            if ($permintaan->status_permintaan === 'Responded') {
+                $permintaan->update(['status_permintaan' => 'Requesting']);
+            }
+            
+            DB::commit();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Pendonor berhasil ditolak dan dihapus',
+                'responden_count' => $permintaan->responden,
+                'status' => $permintaan->status_permintaan
+            ]);
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
 }

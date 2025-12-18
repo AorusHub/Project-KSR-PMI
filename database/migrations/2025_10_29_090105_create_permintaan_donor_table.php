@@ -19,6 +19,9 @@ return new class extends Migration
             $table->string('nama_pasien');
             $table->enum('gol_darah', ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']);
             $table->integer('jumlah_kantong');
+
+            $table->integer('responden')->default(0)->comment('Jumlah pendonor yang merespons');
+            $table->integer('darah_didapat')->default(0)->comment('Jumlah kantong darah yang berhasil didapat');
             
             // Field permintaan
             $table->text('riwayat')->nullable();
@@ -37,7 +40,6 @@ return new class extends Migration
             $table->string('hubungan');
             
             // Field lama (backwards compatibility)
-            $table->string('kontak_keluarga')->nullable();
             $table->enum('status_permintaan', [
                 'Pending', 
                 'Approved',

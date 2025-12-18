@@ -20,6 +20,8 @@ class PermintaanDonor extends Model
         'nama_pasien',
         'gol_darah',
         'jumlah_kantong',
+        'responden',          // ✅ TAMBAHAN BARU
+        'darah_didapat', 
         'riwayat',
         'tempat_rawat',
         'jenis_permintaan',
@@ -27,7 +29,6 @@ class PermintaanDonor extends Model
         'nama_kontak',
         'no_hp',
         'hubungan',
-        'kontak_keluarga',
         'status_permintaan',
         // ✅ DATA PENDONOR YANG MERESPONS
         'nama_pendonor_respond',
@@ -41,6 +42,8 @@ class PermintaanDonor extends Model
         'tanggal_hari' => 'date',
         'tgl_lahir_pendonor' => 'date',
         'tanggal_respond' => 'datetime',
+        'responden' => 'integer',        // ✅ CAST KE INTEGER
+        'darah_didapat' => 'integer', 
     ];
 
     /**
@@ -49,5 +52,40 @@ class PermintaanDonor extends Model
     public function donasiDarah()
     {
         return $this->hasMany(DonasiDarah::class, 'permintaan_id', 'permintaan_id');
+    }
+
+    public function tambahResponden()
+    {
+        $this->increment('responden');
+        
+        // ✅ AUTO UPDATE STATUS jika responden = jumlah_kantong
+        if ($this->responden >= $this->jumlah_kantong) {
+            $this->update(['status_permintaan' => 'Responded']);
+        }
+    }
+
+    // ✅ METHOD: Kurangi responden + auto update status
+    public function kurangiResponden()
+    {
+        if ($this->responden > 0) {
+            $this->decrement('responden');
+            
+            // ✅ AUTO UPDATE STATUS jadi Requesting jika responden < jumlah_kantong
+            if ($this->responden < $this->jumlah_kantong && $this->status_permintaan === 'Responded') {
+                $this->update(['status_permintaan' => 'Requesting']);
+            }
+        }
+    }
+
+    public function responPendonor()
+    {
+        return $this->hasMany(ResponPendonor::class, 'permintaan_id', 'permintaan_id')
+                    ->where('status', 'pending');
+    }
+    
+    // ✅ TAMBAHKAN RELASI KE SEMUA RESPON (termasuk approved/rejected)
+    public function semuaRespon()
+    {
+        return $this->hasMany(ResponPendonor::class, 'permintaan_id', 'permintaan_id');
     }
 }

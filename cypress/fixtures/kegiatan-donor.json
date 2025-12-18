@@ -1,0 +1,24 @@
+{
+ "valid": {
+    "nama_kegiatan": "Test Kegiatan Donor Darah",
+    "deskripsi": "Kegiatan donor darah untuk membantu sesama dan meningkatkan kesadaran masyarakat akan pentingnya donor darah. Mari berpartisipasi!",
+    "tanggal": "2025-12-25",
+    "waktu_mulai": "09:00",
+    "waktu_selesai": "15:00",
+    "lokasi": "Perdos Unhas Tamalanrea, Tamalanrea Jaya, Tamalanrea, Makassar, South Sulawesi, Sulawesi, Indonesia",
+    "rincian_lokasi": "Lantai 2, Ruang Aula Utama",
+    "latitude": "-5.147665",
+    "longitude": "119.432731",
+    "status": "Planned",
+    "target_donor": "0"
+  },
+  "invalid": {
+    "nama_kegiatan": "",
+    "deskripsi": "",
+    "tanggal": "",
+    "waktu_mulai": "",
+    "waktu_selesai": "",
+    "lokasi": "",
+    "rincian_lokasi": ""
+  }
+}

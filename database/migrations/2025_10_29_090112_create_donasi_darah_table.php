@@ -1,5 +1,4 @@
 <?php
-// filepath: c:\xampp\htdocs\ksr-pmi\Project-KSR-PMI\database\migrations\2025_10_29_090112_create_donasi_darah_table.php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -17,7 +16,13 @@ return new class extends Migration
             $table->foreignId('kegiatan_id')->nullable()->constrained('kegiatan_donor', 'kegiatan_id')->onDelete('set null');
             $table->foreignId('permintaan_id')->nullable()->constrained('permintaan_donor', 'permintaan_id')->onDelete('set null');
             $table->string('lokasi_donor');
-            $table->integer('jumlah_kantong')->default(1); // ✅ TAMBAHKAN INI (dalam ml)
+            $table->integer('jumlah_kantong')->default(1);
+            $table->enum('jenis_darah', [
+                'Darah Lengkap (Whole Blood)',
+                'Packed Red Cells (PRC)',
+                'Trombosit (TC)',
+                'Plasma'
+            ])->default('Darah Lengkap (Whole Blood)');
             $table->enum('status_donasi', ['Terdaftar', 'Berhasil', 'Dibatalkan']);
             $table->timestamps();
         });

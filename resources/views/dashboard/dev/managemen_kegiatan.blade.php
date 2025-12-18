@@ -268,7 +268,7 @@
                     <input type="hidden" name="longitude" id="longitude" value="">
                 </div>
 
-                {{-- ✅ RINCIAN LOKASI (TERPISAH DARI DIV LOKASI) --}}
+                {{-- Rincian Lokasi --}}
                 <div class="mb-4">
                     <label class="block text-sm font-semibold text-gray-900 mb-2">
                         Rincian Lokasi
@@ -1198,17 +1198,5 @@
         }, 100);
     };
 </script>
-@endpush
-
-@push('styles')
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<style>
-    #map, #editMap { 
-        height: 250px; 
-        width: 100%; 
-        border-radius: 0.75rem;
-        margin-top: 0.5rem;
-    }
-</style>
 @endpush
 @endsection

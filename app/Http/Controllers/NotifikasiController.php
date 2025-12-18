@@ -22,7 +22,9 @@ class NotifikasiController extends Controller
             return response()->json([], 401);
         }
 
+        // ✅ HANYA AMBIL NOTIFIKASI YANG BELUM DIBACA
         $notifications = Notifikasi::where('user_id', Auth::id())
+            ->where('status_baca', false) // ← TAMBAH INI
             ->orderBy('tanggal_notifikasi', 'desc')
             ->take(10)
             ->get()

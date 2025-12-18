@@ -89,20 +89,28 @@ class PendonorController extends Controller
     /**
      * Display the specified pendonor
      */
-    public function show($id)
-    {
-        try {
-            $pendonor = Pendonor::with(['riwayatDonasi', 'partisipasiKegiatan.kegiatan'])
-                ->findOrFail($id);
+public function show($id)
+{
+    try {
+        // ✅ OPSI 1: Jika relasi user ADA
+        $pendonor = Pendonor::with(['user', 'donasiDarah', 'donasiDarah.kegiatan'])
+            ->findOrFail($id);
 
-            return view('admin.pendonor.show', compact('pendonor'));
+        // ✅ OPSI 2: Jika relasi user TIDAK ADA (hapus 'user')
+        // $pendonor = Pendonor::with(['donasiDarah', 'donasiDarah.kegiatan'])
+        //     ->findOrFail($id);
 
-        } catch (\Exception $e) {
-            Log::error('Error in show pendonor: ' . $e->getMessage());
-            return redirect()->route('admin.pendonor.index')
-                ->with('error', 'Pendonor tidak ditemukan');
-        }
+        return view('admin.pendonor.show', compact('pendonor'));
+
+    } catch (\Exception $e) {
+        Log::error('Error in show pendonor: ' . $e->getMessage());
+        Log::error('Stack trace: ' . $e->getTraceAsString()); // ✅ TAMBAH DEBUG
+        
+        return back()
+            ->with('error', 'Pendonor tidak ditemukan: ' . $e->getMessage());
     }
+}
+
 
     /**
      * Show the form for editing the specified pendonor
